@@ -142,7 +142,7 @@ window.Quarto = {
   <li><a href="#validation-results" id="toc-validation-results" class="nav-link" data-scroll-target="#validation-results">Validation Results</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#risk-model-and-portfolio-optimization" id="toc-risk-model-and-portfolio-optimization" class="nav-link" data-scroll-target="#risk-model-and-portfolio-optimization">Risk Model and Portfolio Optimization</a>
+  <li><a href="#risk-model" id="toc-risk-model" class="nav-link" data-scroll-target="#risk-model">Risk Model</a>
   <ul class="collapse">
   <li><a href="#factor-risk-model" id="toc-factor-risk-model" class="nav-link" data-scroll-target="#factor-risk-model">Factor Risk Model</a></li>
   <li><a href="#factor-covariance-matrix" id="toc-factor-covariance-matrix" class="nav-link" data-scroll-target="#factor-covariance-matrix">Factor Covariance Matrix</a></li>
@@ -150,16 +150,15 @@ window.Quarto = {
   </ul></li>
   <li><a href="#backtest" id="toc-backtest" class="nav-link" data-scroll-target="#backtest">Backtest</a>
   <ul class="collapse">
-  <li><a href="#probability-weighted-portfolio-construction" id="toc-probability-weighted-portfolio-construction" class="nav-link" data-scroll-target="#probability-weighted-portfolio-construction">Probability Weighted Portfolio Construction</a>
+  <li><a href="#probability-weighted-portfolios" id="toc-probability-weighted-portfolios" class="nav-link" data-scroll-target="#probability-weighted-portfolios">Probability Weighted Portfolios</a>
   <ul class="collapse">
   <li><a href="#long-only-top-10" id="toc-long-only-top-10" class="nav-link" data-scroll-target="#long-only-top-10">Long-Only: Top 10%</a></li>
-  <li><a href="#long-short-top-and-bottom-5" id="toc-long-short-top-and-bottom-5" class="nav-link" data-scroll-target="#long-short-top-and-bottom-5">Long-Short: Top and Bottom 5%</a></li>
+  <li><a href="#long-short-topbottom-5" id="toc-long-short-topbottom-5" class="nav-link" data-scroll-target="#long-short-topbottom-5">Long-Short: Top/Bottom 5%</a></li>
   </ul></li>
-  <li><a href="#portfolio-construction-with-risk-model" id="toc-portfolio-construction-with-risk-model" class="nav-link" data-scroll-target="#portfolio-construction-with-risk-model">Portfolio Construction with Risk Model</a>
+  <li><a href="#risk-optimized-portfolios" id="toc-risk-optimized-portfolios" class="nav-link" data-scroll-target="#risk-optimized-portfolios">Risk Optimized Portfolios</a>
   <ul class="collapse">
-  <li><a href="#fundamental-factor-risk-model" id="toc-fundamental-factor-risk-model" class="nav-link" data-scroll-target="#fundamental-factor-risk-model">Fundamental Factor Risk Model</a></li>
   <li><a href="#optimization-and-backtest-setup" id="toc-optimization-and-backtest-setup" class="nav-link" data-scroll-target="#optimization-and-backtest-setup">Optimization and Backtest Setup</a></li>
-  <li><a href="#risk-managed-backtest-results" id="toc-risk-managed-backtest-results" class="nav-link" data-scroll-target="#risk-managed-backtest-results">Risk-Managed Backtest Results</a></li>
+  <li><a href="#backtest-results" id="toc-backtest-results" class="nav-link" data-scroll-target="#backtest-results">Backtest Results</a></li>
   </ul></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -628,18 +627,18 @@ P\left(
 Y^{1M}_{i,t}=1
 \mid
 X_{i,t}
-\right).
+\right)
 \]</span></p>
 <p>The predicted probability <span class="math inline">\(\widehat{p}_{i,t}\)</span> is subsequently used as the stock level alpha score. Since the target is defined relative to the monthly median, the two classes are approximately balanced by construction.</p>
 </section>
 <section id="feature-selection" class="level3">
 <h3 class="anchored" data-anchor-id="feature-selection">Feature Selection</h3>
 <p>To reduce redundancy among the 153 JKP characteristics, feature selection was performed using observations from 2000–2009. A random sample of 350,000 stock-month observations was used, and missing values were replaced with the corresponding training-sample medians.</p>
-<p>The characteristics were grouped using complete-linkage hierarchical clustering. The distance between characteristics (j) and (k) was defined as</p>
+<p>The characteristics were grouped using complete-linkage hierarchical clustering. The distance between characteristics <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span> was defined as</p>
 <p><span class="math display">\[
 d_{jk}=1-\left|\rho_{jk}\right|,
 \]</span></p>
-<p>where (_{jk}) is their Pearson correlation. Therefore, characteristics with strong positive or negative correlations were placed in the same cluster.</p>
+<p>where <span class="math inline">\(\rho_{jk}\)</span> is their Pearson correlation. Therefore, characteristics with strong positive or negative correlations were placed in the same cluster.</p>
 <p>The hierarchy was divided into 100 clusters, and the characteristic with the highest variance within each cluster was retained as its representative. This reduced the feature set from 153 to 100 characteristics.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\01_feature_selection.ipynb" data-notebook-title="ret_exc_lead1m" data-notebook-cellid="cell-fig-feature-selection">
 <div id="cell-fig-feature-selection" class="cell">
@@ -789,8 +788,8 @@ Figure&nbsp;5: Information retained under hierarchical feature selection
 </section>
 </section>
 </section>
-<section id="risk-model-and-portfolio-optimization" class="level1">
-<h1>Risk Model and Portfolio Optimization</h1>
+<section id="risk-model" class="level1">
+<h1>Risk Model</h1>
 <section id="factor-risk-model" class="level2">
 <h2 class="anchored" data-anchor-id="factor-risk-model">Factor Risk Model</h2>
 <p>Following the Bloomberg Global Equity Fundamental Factor Model, stock returns are decomposed into systematic factor returns and idiosyncratic returns. The covariance matrix of stock returns is estimated as</p>
@@ -799,7 +798,7 @@ Figure&nbsp;5: Information retained under hierarchical feature selection
 =
 X F X^{\top}
 +
-\Delta,
+\Delta
 \]</span></p>
 <p>where:</p>
 <ul>
@@ -810,13 +809,11 @@ X F X^{\top}
 </ul>
 <p>The idiosyncratic covariance matrix is assumed to be diagonal, with each diagonal element representing the idiosyncratic variance of one stock. Under this structure, portfolio variance can be decomposed into systematic and idiosyncratic risk:</p>
 <p><span class="math display">\[
-\sigma_{p}^{2}
-=
 w^{\top}\Omega w
 =
 w^{\top}X F X^{\top}w
 +
-w^{\top}\Delta w.
+w^{\top}\Delta w
 \]</span></p>
 </section>
 <section id="factor-covariance-matrix" class="level2">
@@ -825,18 +822,18 @@ w^{\top}\Delta w.
 <p><span class="math display">\[
 F
 =
-V C V,
+V C V
 \]</span></p>
-<p>where <span class="math inline">\(V\)</span> is a diagonal matrix of factor volatilities and <span class="math inline">\(C\)</span> is the factor correlation matrix. Following Bloomberg, factor volatilities are estimated using an exponentially weighted moving average with a 26 week half-life.</p>
-<p>The factor-correlation matrix combines an exponentially weighted historical correlation matrix with a PCA correlation matrix:</p>
+<p>where <span class="math inline">\(V\)</span> is a diagonal matrix of factor volatilities and <span class="math inline">\(C\)</span> is the factor correlation matrix. Following Bloomberg factor volatilities are estimated using an exponentially weighted moving average with a 26 week half-life.</p>
+<p>The factor correlation matrix combines an exponentially weighted historical correlation matrix with a PCA correlation matrix:</p>
 <p><span class="math display">\[
 C
 =
 0.8C_{0}
 +
-0.2C_{P},
+0.2C_{P}
 \]</span></p>
-<p>where <span class="math inline">\(C_{0}\)</span> is estimated using an exponentially weighted moving average with a 52-week half-life, while <span class="math inline">\(C_{P}\)</span> is constructed from the principal components associated with the largest eigenvalues. This combination retains economically meaningful historical relationships while reducing estimation noise.</p>
+<p>where <span class="math inline">\(C_{0}\)</span> is estimated using an exponentially weighted moving average with a 12 month half-life, while <span class="math inline">\(C_{P}\)</span> is constructed from the principal components associated with the largest eigenvalues. This combination retains economically meaningful historical relationships while reducing estimation noise.</p>
 </section>
 <section id="portfolio-optimization" class="level2">
 <h2 class="anchored" data-anchor-id="portfolio-optimization">Portfolio Optimization</h2>
@@ -848,7 +845,7 @@ C
 -
 \frac{\lambda}{2}
 w^{\top}\Omega w
-\right\},
+\right\}
 \]</span></p>
 <p>where <span class="math inline">\(\alpha\)</span> is the vector of QMJ or machine-learning alpha scores, <span class="math inline">\(w\)</span> is the vector of portfolio weights, and <span class="math inline">\(\lambda\)</span> is the risk-aversion parameter.</p>
 <p>The first term rewards exposure to stocks with higher alpha scores, while the second term penalizes predicted portfolio risk. A larger value of <span class="math inline">\(\lambda\)</span> produces a more risk-controlled portfolio. The optimization is subject to the relevant budget, long-short exposure, and maximum-position constraints of each strategy.</p>
@@ -856,15 +853,15 @@ w^{\top}\Omega w
 </section>
 <section id="backtest" class="level1">
 <h1>Backtest</h1>
-<section id="probability-weighted-portfolio-construction" class="level2">
-<h2 class="anchored" data-anchor-id="probability-weighted-portfolio-construction">Probability Weighted Portfolio Construction</h2>
-<p>At the end of each month <span class="math inline">\(t\)</span>, stocks are ranked according to the predicted probability <span class="math inline">\(\hat{p}_{i,t}\)</span> that stock <span class="math inline">\(i\)</span> will earn a positive excess return during the following month. Probability weighting uses both the ranking and the magnitude of the predictions: stocks associated with stronger model confidence receive larger portfolio weights.</p>
-<p>These baseline portfolios do not use a covariance matrix or a risk-model penalty. Therefore, the resulting performance primarily reflects the economic value of the machine-learning signals.</p>
+<section id="probability-weighted-portfolios" class="level2">
+<h2 class="anchored" data-anchor-id="probability-weighted-portfolios">Probability Weighted Portfolios</h2>
+<p>At the end of each month <span class="math inline">\(t\)</span>, stocks are ranked by the predicted probability <span class="math inline">\(\hat{p}_{i,t}\)</span> that stock <span class="math inline">\(i\)</span> will earn a positive excess return in month <span class="math inline">\(t+1\)</span>. Probability weighting uses both the ranking and magnitude of these predictions, assigning larger weights to stocks associated with stronger model confidence.</p>
+<p>These portfolios do not use a covariance matrix or risk penalty. They therefore serve as a baseline for evaluating the economic value of the machine learning signals before incorporating the factor risk model.</p>
 <section id="long-only-top-10" class="level3">
 <h3 class="anchored" data-anchor-id="long-only-top-10">Long-Only: Top 10%</h3>
-<p>For each month, the long-only portfolio selects the 10% of stocks with the highest predicted probabilities. Let <span class="math inline">\(\mathcal{L}_{t}^{10}\)</span> denote this selected set:</p>
+<p>The long-only strategy selects the 10% of stocks with the highest predicted probabilities. Let <span class="math inline">\(\mathcal{L}_t^{10}\)</span> denote this set:</p>
 <p><span class="math display">\[
-\mathcal{L}_{t}^{10}
+\mathcal{L}_t^{10}
 =
 \left\{
 i:
@@ -873,10 +870,18 @@ i:
 Q_{0.90,t}
 \right\},
 \]</span></p>
-<p>where <span class="math inline">\(Q_{0.90,t}\)</span> is the 90th percentile of predicted probabilities in month <span class="math inline">\(t\)</span>.</p>
-<p>Within the selected group, portfolio weights are proportional to the predicted probabilities:</p>
+<p>where <span class="math inline">\(Q_{0.90,t}\)</span> is the 90th percentile of predicted probabilities in month <span class="math inline">\(t\)</span>. For each selected stock, the portfolio weight is:</p>
 <p><span class="math display">\[
-w_{i,t} = \frac{\hat{p}_{i,t}}{\sum_{j\in\mathcal{L}_{t}^{10}}\hat{p}_{j,t}},
+w_{i,t}
+=
+\frac{
+\hat{p}_{i,t}
+}{
+\sum_{j\in\mathcal{L}_t^{10}}
+\hat{p}_{j,t}
+},
+\qquad
+i\in\mathcal{L}_t^{10}.
 \]</span></p>
 <p>The portfolio is fully invested and long-only:</p>
 <p><span class="math display">\[
@@ -884,17 +889,16 @@ w_{i,t} = \frac{\hat{p}_{i,t}}{\sum_{j\in\mathcal{L}_{t}^{10}}\hat{p}_{j,t}},
 \qquad
 w_{i,t}\geq 0.
 \]</span></p>
-<p>The portfolio formed at month <span class="math inline">\(t\)</span> is evaluated using the realized excess returns in month <span class="math inline">\(t+1\)</span>:</p>
+<p>The portfolio formed at the end of month <span class="math inline">\(t\)</span> is evaluated using realized excess returns in month <span class="math inline">\(t+1\)</span>:</p>
 <p><span class="math display">\[
 R_{t+1}
 =
 \sum_i
-w_{i,t}
-r_{i,t+1}.
+w_{i,t}r_{i,t+1}.
 \]</span></p>
-<p><a href="#fig-long-only-prob-weighted" class="quarto-xref">Figure&nbsp;6</a> compares the cumulative performance of the two selected machine-learning portfolios with the S&amp;P 500 benchmark.</p>
+<p><a href="#fig-long-only-prob-weighted" class="quarto-xref">Figure&nbsp;6</a> and <a href="#tbl-long-only-performance" class="quarto-xref">Table&nbsp;1</a> show that the six model specifications produce relatively similar long-only performance. Logistic Subset achieves the strongest result, with an annualized return of 10.68%, a Sharpe ratio of 0.646, and a cumulative return of 73.26%. Overall, the long-only portfolios generate positive returns, but their risk-adjusted performance remains moderate.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-only-prob-weighted">
-<div id="cell-fig-long-only-prob-weighted" class="cell" data-message="false" data-execution_count="6">
+<div id="cell-fig-long-only-prob-weighted" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
 <div id="fig-long-only-prob-weighted" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -902,7 +906,7 @@ r_{i,t+1}.
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-only-prob-weighted-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-only-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Cumulative performance of two selected probability-weighted Long-Only Top 10% portfolios compared with the S&amp;P 500 benchmark.
+Figure&nbsp;6: Growth of $1 for the 6 probability weighted long-only Top 10% portfolios.
 </figcaption>
 </figure>
 </div>
@@ -910,11 +914,11 @@ Figure&nbsp;6: Cumulative performance of two selected probability-weighted Long-
 </div>
 </div>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-long-only-performance">
-<div class="cell" data-message="false" data-execution_count="7">
-<div id="tbl-long-only-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false" data-execution_count="7">
+<div class="cell" data-message="false">
+<div id="tbl-long-only-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Performance metrics for the selected probability-weighted Long-Only Top 10% portfolios and the S&amp;P 500 benchmark.
+Table&nbsp;1: Performance metrics for the 6 probability weighted long-only Top 10% portfolios.
 </figcaption>
 <div aria-describedby="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -998,71 +1002,80 @@ Table&nbsp;1: Performance metrics for the selected probability-weighted Long-Onl
 </div>
 </div>
 </section>
-<section id="long-short-top-and-bottom-5" class="level3">
-<h3 class="anchored" data-anchor-id="long-short-top-and-bottom-5">Long-Short: Top and Bottom 5%</h3>
-<p>For each month, the long-short portfolio buys the 5% of stocks with the highest predicted probabilities and shorts the 5% with the lowest predicted probabilities. The two sets are defined as:</p>
+<section id="long-short-topbottom-5" class="level3">
+<h3 class="anchored" data-anchor-id="long-short-topbottom-5">Long-Short: Top/Bottom 5%</h3>
+<p>The long-short strategy buys the 5% of stocks with the highest predicted probabilities and shorts the 5% with the lowest predicted probabilities. The two sets are defined as:</p>
 <p><span class="math display">\[
-\mathcal{L}_{t}^{5}
+\mathcal{L}_t^{5}
 =
 \left\{
 i:
-\hat{p}_{i,t}\geq Q_{0.95,t}
+\hat{p}_{i,t}
+\geq
+Q_{0.95,t}
 \right\},
 \qquad
-\mathcal{S}_{t}^{5}
+\mathcal{S}_t^{5}
 =
 \left\{
 i:
-\hat{p}_{i,t}\leq Q_{0.05,t}
+\hat{p}_{i,t}
+\leq
+Q_{0.05,t}
 \right\}.
 \]</span></p>
-<p>Within the long leg, weights are proportional to <span class="math inline">\(\hat{p}_{i,t}\)</span>. Within the short leg, the short-confidence score is defined as <span class="math inline">\(1-\hat{p}_{i,t}\)</span>, so stocks with lower predicted probabilities receive larger absolute short weights.</p>
-<p>The final portfolio weights are:</p>
+<p>Within the long leg, weights are proportional to <span class="math inline">\(\hat{p}_{i,t}\)</span>. Within the short leg, the confidence score is defined as <span class="math inline">\(1-\hat{p}_{i,t}\)</span>, so stocks with lower predicted probabilities receive larger absolute short weights:</p>
 <p><span class="math display">\[
 w_{i,t}
 =
 \begin{cases}
 \displaystyle
 0.5
-\frac{\hat{p}_{i,t}}
-{\sum_{j\in\mathcal{L}_{t}^{5}}\hat{p}_{j,t}},
-&amp; i\in\mathcal{L}_{t}^{5}, \\[14pt]
+\frac{
+\hat{p}_{i,t}
+}{
+\sum_{j\in\mathcal{L}_t^{5}}
+\hat{p}_{j,t}
+},
+&amp;
+i\in\mathcal{L}_t^{5}
+\\[14pt]
 \displaystyle
 -0.5
-\frac{1-\hat{p}_{i,t}}
-{\sum_{j\in\mathcal{S}_{t}^{5}}
-(1-\hat{p}_{j,t})},
-&amp; i\in\mathcal{S}_{t}^{5}, \\[14pt]
+\frac{
+1-\hat{p}_{i,t}
+}{
+\sum_{j\in\mathcal{S}_t^{5}}
+(1-\hat{p}_{j,t})
+},
+&amp;
+i\in\mathcal{S}_t^{5}
 \end{cases}
 \]</span></p>
-<p>The portfolio allocates 50% gross exposure to each side, producing a dollar-neutral portfolio with 100% total gross exposure:</p>
+<p>The portfolio allocates 50% gross exposure to each leg, resulting in zero net exposure and 100% total gross exposure:</p>
 <p><span class="math display">\[
 \sum_i w_{i,t}=0,
 \qquad
-\sum_i
-\left|
-w_{i,t}
-\right|
-=1.
+\sum_i |w_{i,t}|=1.
 \]</span></p>
 <p>Its realized return is:</p>
 <p><span class="math display">\[
 R_{t+1}
 =
 \sum_i
-w_{i,t}
-r_{i,t+1}
+w_{i,t}r_{i,t+1}
 =
 0.5
 \left(
 R_{t+1}^{\mathrm{Long}}
 -
 R_{t+1}^{\mathrm{Short}}
-\right).
+\right),
 \]</span></p>
-<p><a href="#fig-long-short-prob-weighted" class="quarto-xref">Figure&nbsp;7</a> compares the two selected machine-learning portfolios with the QMJ long-short benchmark.</p>
+<p>where <span class="math inline">\(R_{t+1}^{\mathrm{Short}}\)</span> denotes the realized return of the stocks in the short basket before applying the negative portfolio exposure.</p>
+<p><a href="#fig-long-short-prob-weighted" class="quarto-xref">Figure&nbsp;7</a> and <a href="#tbl-long-short-performance" class="quarto-xref">Table&nbsp;2</a> show that the long-short portfolios substantially outperform their long-only counterparts, although they also experience deeper drawdowns. Random Forest Subset produces the highest annualized return of 31.53% and cumulative return of 441.39%, while XGBoost Full achieves the highest Sharpe ratio of 1.436. Random Forest Full records the smallest maximum drawdown among the six long-short portfolios at -31.42%.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-short-prob-weighted">
-<div id="cell-fig-long-short-prob-weighted" class="cell" data-message="false" data-execution_count="8">
+<div id="cell-fig-long-short-prob-weighted" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
 <div id="fig-long-short-prob-weighted" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -1070,7 +1083,7 @@ R_{t+1}^{\mathrm{Short}}
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-short-prob-weighted-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-short-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Cumulative performance of two selected probability-weighted Long-Short Top/Bottom 5% portfolios compared with the QMJ benchmark.
+Figure&nbsp;7: Growth of $1 for the 6 probability weighted long-short Top/Bottom 5% portfolios.
 </figcaption>
 </figure>
 </div>
@@ -1078,11 +1091,11 @@ Figure&nbsp;7: Cumulative performance of two selected probability-weighted Long-
 </div>
 </div>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-long-short-performance">
-<div class="cell" data-message="false" data-execution_count="9">
-<div id="tbl-long-short-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false" data-execution_count="9">
+<div class="cell" data-message="false">
+<div id="tbl-long-short-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Performance metrics for the selected probability-weighted Long-Short Top/Bottom 5% portfolios and the QMJ benchmark.
+Table&nbsp;2: Performance metrics for the 6 probability weighted long-short Top/Bottom 5% portfolios.
 </figcaption>
 <div aria-describedby="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1167,71 +1180,37 @@ Table&nbsp;2: Performance metrics for the selected probability-weighted Long-Sho
 </div>
 </section>
 </section>
-<section id="portfolio-construction-with-risk-model" class="level2">
-<h2 class="anchored" data-anchor-id="portfolio-construction-with-risk-model">Portfolio Construction with Risk Model</h2>
+<section id="risk-optimized-portfolios" class="level2">
+<h2 class="anchored" data-anchor-id="risk-optimized-portfolios">Risk Optimized Portfolios</h2>
 <p>The probability weighted portfolios use only the machine learning predictions to determine portfolio weights. This section incorporates a factor risk model so that portfolio construction considers both predicted alpha and portfolio risk.</p>
-<section id="fundamental-factor-risk-model" class="level3">
-<h3 class="anchored" data-anchor-id="fundamental-factor-risk-model">Fundamental Factor Risk Model</h3>
-<p>The stock return covariance matrix is estimated as:</p>
-<p><span class="math display">\[
-\boldsymbol{\Omega}
-=
-\mathbf{X}
-\mathbf{F}
-\mathbf{X}'
-+
-\boldsymbol{\Delta},
-\]</span></p>
-<p>where <span class="math inline">\(\mathbf{X}\)</span> contains stock-level factor exposures, <span class="math inline">\(\mathbf{F}\)</span> is the factor covariance matrix, and <span class="math inline">\(\boldsymbol{\Delta}\)</span> contains stock-specific variances.</p>
-<p>The factor covariance matrix is given by:</p>
-<p><span class="math display">\[
-\mathbf{F}
-=
-\mathbf{V}
-\mathbf{C}
-\mathbf{V},
-\]</span></p>
-<p>where <span class="math inline">\(\mathbf{V}\)</span> contains estimated factor volatilities. Following the Bloomberg-inspired risk-model structure <span class="citation" data-cites="CahanJi2016">(<a href="#ref-CahanJi2016" role="doc-biblioref">Cahan and Ji 2016</a>)</span>, the factor correlation matrix combines EWMA and PCA estimates:</p>
-<p><span class="math display">\[
-\mathbf{C}
-=
-0.8\mathbf{C}_{0}
-+
-0.2\mathbf{C}_{P}.
-\]</span></p>
-<p>Here, <span class="math inline">\(\mathbf{C}_{0}\)</span> captures time-varying historical correlations, while <span class="math inline">\(\mathbf{C}_{P}\)</span> provides a more stable PCA-based estimate.</p>
-</section>
 <section id="optimization-and-backtest-setup" class="level3">
 <h3 class="anchored" data-anchor-id="optimization-and-backtest-setup">Optimization and Backtest Setup</h3>
-<p>The predicted probabilities from each machine-learning model are treated as cross-sectional alpha scores. Portfolio weights are obtained by solving:</p>
+<p>The predicted probabilities from each machine learning model are treated as cross sectional alpha scores. Portfolio weights are obtained by solving:</p>
 <p><span class="math display">\[
-\mathbf{w}^*
+w^*
 =
-\underset{\mathbf{w}}{\operatorname{arg\,max}}
-\left[
-\boldsymbol{\alpha}'\mathbf{w}
+\underset{w}{\operatorname{arg\,max}}
+\left\{
+\alpha^\top w
 -
-\frac{\lambda}{2}
-\mathbf{w}'
-\boldsymbol{\Omega}
-\mathbf{w}
-\right].
+\frac{\lambda}{2}w^\top\Omega w
+\right\}
 \]</span></p>
 <p>The first term rewards exposure to stronger alpha signals, while the second penalizes predicted portfolio variance. The optimization is evaluated using:</p>
 <p><span class="math display">\[
-\lambda \in \{0,100,300,1000\}.
+\lambda \in \{0,100,300,1000\}
 \]</span></p>
 <p>When <span class="math inline">\(\lambda=0\)</span>, portfolio construction depends only on the alpha signal and portfolio constraints. Larger values of <span class="math inline">\(\lambda\)</span> place greater emphasis on risk control.</p>
 <p>For the long-short strategy, the top and bottom 5% of stocks ranked by predicted probability form the long and short candidate sets. Each stock is subject to a maximum absolute weight of 1%.</p>
 <p>At the end of month <span class="math inline">\(t\)</span>, alpha forecasts, risk estimates, and portfolio weights are calculated using only information available at that time. Performance is then evaluated using realized returns in month <span class="math inline">\(t+1\)</span>.</p>
 </section>
-<section id="risk-managed-backtest-results" class="level3">
-<h3 class="anchored" data-anchor-id="risk-managed-backtest-results">Risk-Managed Backtest Results</h3>
-<p>The risk-model backtest is conducted using XGBoost Full and Random Forest Sub. QMJ is the primary long-short benchmark, while the S&amp;P 500 is included as a market-performance reference. All return series cover the same evaluation period and are normalized to an initial value of one.</p>
-<p>The accompanying tables report annualized mean return, annualized volatility, annualized Sharpe ratio, cumulative return, and maximum drawdown.</p>
+<section id="backtest-results" class="level3">
+<h3 class="anchored" data-anchor-id="backtest-results">Backtest Results</h3>
+<p>The risk model backtest is conducted using XGBoost Full and Random Forest Sub. QMJ serves as the primary long-short benchmark, while the S&amp;P 500 is included as a market performance reference. All return series cover the same evaluation period and are normalized to an initial value of 1.</p>
 <section id="random-forest-sub" class="level4">
 <h4 class="anchored" data-anchor-id="random-forest-sub">Random Forest Sub</h4>
-<p><a href="#fig-risk-rf-sub" class="quarto-xref">Figure&nbsp;8</a> presents the corresponding cumulative performance comparison for the Random Forest Sub model.</p>
+<p><a href="#fig-risk-rf-sub" class="quarto-xref">Figure&nbsp;8</a> and <a href="#tbl-risk-rf-sub" class="quarto-xref">Table&nbsp;3</a> show a clear trade off between return and risk. At <span class="math inline">\(\lambda=0\)</span>, the portfolio achieves the highest annualized return of 53.20% and Sharpe ratio of 1.609, but also exhibits 33.07% volatility and a maximum drawdown of -56.38%.</p>
+<p>As <span class="math inline">\(\lambda\)</span> increases to 1000, annualized volatility declines to 20.97% and maximum drawdown improves to -45.97%. However, annualized return also falls to 14.56% and the Sharpe ratio declines to 0.694. Among the risk-managed specifications, <span class="math inline">\(\lambda=300\)</span> provides a middle ground, producing a 28.19% annualized return and a Sharpe ratio of 1.116, although its drawdown remains substantially larger than that of the S&amp;P 500.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-rf-sub">
 <div id="cell-fig-risk-rf-sub" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
@@ -1241,20 +1220,19 @@ Table&nbsp;2: Performance metrics for the selected probability-weighted Long-Sho
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-rf-sub-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Cumulative performance of the risk-optimized Random Forest Sub Long-Short Top/Bottom 5% portfolios across different risk-aversion parameters.
+Figure&nbsp;8: Cumulative performance of the risk optimized Random Forest Sub long-short portfolios.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<p><a href="#tbl-risk-rf-sub" class="quarto-xref">Table&nbsp;3</a> reports the performance metrics for the Random Forest Sub portfolios and benchmark series.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-risk-rf-sub">
 <div class="cell" data-message="false">
 <div id="tbl-risk-rf-sub" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Performance metrics for the risk-optimized Random Forest Sub portfolios and benchmark series.
+Table&nbsp;3: Performance metrics for the Random Forest Sub portfolios and benchmarks.
 </figcaption>
 <div aria-describedby="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1332,7 +1310,8 @@ Table&nbsp;3: Performance metrics for the risk-optimized Random Forest Sub portf
 </section>
 <section id="xgboost-full" class="level4">
 <h4 class="anchored" data-anchor-id="xgboost-full">XGBoost Full</h4>
-<p><a href="#fig-risk-xgb-full" class="quarto-xref">Figure&nbsp;9</a> compares the cumulative performance of the XGBoost Full portfolios across the four risk-aversion parameters.</p>
+<p><a href="#fig-risk-xgb-full" class="quarto-xref">Figure&nbsp;9</a> and <a href="#tbl-risk-xgb-full" class="quarto-xref">Table&nbsp;4</a> indicate stronger overall performance for the XGBoost Full signal. The <span class="math inline">\(\lambda=0\)</span> portfolio generates the highest annualized return of 74.12% and Sharpe ratio of 2.163, accompanied by 34.27% volatility and a maximum drawdown of -49.86%.</p>
+<p>At <span class="math inline">\(\lambda=300\)</span>, annualized volatility falls to 23.81%, while the portfolio retains an annualized return of 32.97% and a Sharpe ratio of 1.385. By contrast, the <span class="math inline">\(\lambda=1000\)</span> portfolio produces performance close to the S&amp;P 500, suggesting that a very large risk penalty removes much of the return advantage provided by the alpha signal.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-xgb-full">
 <div id="cell-fig-risk-xgb-full" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
@@ -1342,20 +1321,19 @@ Table&nbsp;3: Performance metrics for the risk-optimized Random Forest Sub portf
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-xgb-full-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: Cumulative performance of the risk-optimized XGBoost Full Long-Short Top/Bottom 5% portfolios across different risk-aversion parameters.
+Figure&nbsp;9: Cumulative performance of the risk-optimized XGBoost Full long-short portfolios.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<p><a href="#tbl-risk-xgb-full" class="quarto-xref">Table&nbsp;4</a> reports the corresponding portfolio and benchmark performance metrics.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-risk-xgb-full">
 <div class="cell" data-message="false">
 <div id="tbl-risk-xgb-full" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: Performance metrics for the risk-optimized XGBoost Full portfolios and benchmark series.
+Table&nbsp;4: Performance metrics for the XGBoost Full portfolios and benchmarks.
 </figcaption>
 <div aria-describedby="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1430,6 +1408,7 @@ Table&nbsp;4: Performance metrics for the risk-optimized XGBoost Full portfolios
 </div>
 </div>
 </div>
+<p>Overall, XGBoost Full produces higher returns and Sharpe ratios than Random Forest Sub at each corresponding value of <span class="math inline">\(\lambda\)</span>. The results also demonstrate that stronger risk penalization reduces portfolio volatility, but this improvement comes at the cost of lower returns. In this comparison, <span class="math inline">\(\lambda=300\)</span> provides a reasonable balance between preserving the alpha signal and controlling portfolio risk.</p>
 </section>
 </section>
 </section>
