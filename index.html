@@ -54,9 +54,6 @@ div.csl-indent {
 <script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<script src="index_files/libs/quarto-diagram/mermaid.min.js"></script>
-<script src="index_files/libs/quarto-diagram/mermaid-init.js"></script>
-<link href="index_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -100,6 +97,7 @@ window.Quarto = {
 };
 </script>
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -114,8 +112,11 @@ window.Quarto = {
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
   <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data Sources</a></li>
-  <li><a href="#data-construction-pipeline" id="toc-data-construction-pipeline" class="nav-link" data-scroll-target="#data-construction-pipeline">Data Construction Pipeline</a></li>
-  <li><a href="#sample-design-and-timing" id="toc-sample-design-and-timing" class="nav-link" data-scroll-target="#sample-design-and-timing">Sample Design and Timing</a></li>
+  <li><a href="#data-construction-overview" id="toc-data-construction-overview" class="nav-link" data-scroll-target="#data-construction-overview">Data Construction Overview</a></li>
+  <li><a href="#security-month-panel-construction" id="toc-security-month-panel-construction" class="nav-link" data-scroll-target="#security-month-panel-construction">Security Month Panel Construction</a></li>
+  <li><a href="#characteristic-construction" id="toc-characteristic-construction" class="nav-link" data-scroll-target="#characteristic-construction">Characteristic Construction</a></li>
+  <li><a href="#factor-portfolio-construction" id="toc-factor-portfolio-construction" class="nav-link" data-scroll-target="#factor-portfolio-construction">Factor Portfolio Construction</a></li>
+  <li><a href="#sample-coverage-and-timing" id="toc-sample-coverage-and-timing" class="nav-link" data-scroll-target="#sample-coverage-and-timing">Sample Coverage and Timing</a></li>
   </ul></li>
   <li><a href="#factor-validation" id="toc-factor-validation" class="nav-link" data-scroll-target="#factor-validation">Factor Validation</a>
   <ul class="collapse">
@@ -127,7 +128,14 @@ window.Quarto = {
   <li><a href="#replication-rate" id="toc-replication-rate" class="nav-link" data-scroll-target="#replication-rate">Replication Rate</a></li>
   </ul></li>
   <li><a href="#replication-of-jkp-results" id="toc-replication-of-jkp-results" class="nav-link" data-scroll-target="#replication-of-jkp-results">Replication of JKP Results</a></li>
-  <li><a href="#factor-themes" id="toc-factor-themes" class="nav-link" data-scroll-target="#factor-themes">Factor Themes</a></li>
+  <li><a href="#cross-sectional-robustness" id="toc-cross-sectional-robustness" class="nav-link" data-scroll-target="#cross-sectional-robustness">Cross Sectional Robustness</a>
+  <ul class="collapse">
+  <li><a href="#factor-clusters" id="toc-factor-clusters" class="nav-link" data-scroll-target="#factor-clusters">Factor Clusters</a></li>
+  <li><a href="#replication-across-stock-size-groups" id="toc-replication-across-stock-size-groups" class="nav-link" data-scroll-target="#replication-across-stock-size-groups">Replication Across Stock Size Groups</a></li>
+  <li><a href="#replication-across-factor-clusters" id="toc-replication-across-factor-clusters" class="nav-link" data-scroll-target="#replication-across-factor-clusters">Replication Across Factor Clusters</a></li>
+  <li><a href="#clusters-alpha-across-stock-size-groups" id="toc-clusters-alpha-across-stock-size-groups" class="nav-link" data-scroll-target="#clusters-alpha-across-stock-size-groups">Clusters Alpha Across Stock Size Groups</a></li>
+  </ul></li>
+  <li><a href="#time-series-external-validity" id="toc-time-series-external-validity" class="nav-link" data-scroll-target="#time-series-external-validity">Time Series External Validity</a></li>
   <li><a href="#modern-sample-validation" id="toc-modern-sample-validation" class="nav-link" data-scroll-target="#modern-sample-validation">Modern Sample Validation</a></li>
   </ul></li>
   <li><a href="#alpha-models" id="toc-alpha-models" class="nav-link" data-scroll-target="#alpha-models">Alpha Models</a>
@@ -197,15 +205,16 @@ window.Quarto = {
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>A large literature documents firm characteristics that predict stock returns, but the growing number of proposed factors has raised concerns about data mining and robustness. <a href="#ref-JensenKellyPedersen2023">Jensen, Kelly, and Pedersen (JKP)</a> systematically evaluate these factors and find that many remain significant after risk adjustment and multiple-testing corrections.</p>
-<p>This project develops an end-to-end quantitative equity research process based on JKP’s framework. It first evaluates 153 equity factors through replication and a more recent sample, then uses the validated characteristics to construct alpha signals. The <a href="#ref-AsnessFrazziniPedersen2019">Quality Minus Junk (QMJ)</a> strategy serves as an interpretable benchmark, while Logistic Regression, Random Forest, and XGBoost examine whether nonlinear models improve return prediction.</p>
+<p>This project develops an end-to-end quantitative equity research process based on JKP’s framework. It first evaluates 153 equity factors through replication and a more recent sample, then uses these characteristics to construct alpha signals. The <a href="#ref-AsnessFrazziniPedersen2019">Quality Minus Junk (QMJ)</a> strategy serves as an interpretable benchmark, while Logistic Regression, Random Forest, and XGBoost examine whether nonlinear models improve return prediction.</p>
 <p>Finally, the alpha forecasts are combined with a <a href="#ref-CahanJi2016">Bloomberg fundamental factor risk model</a> to construct risk-aware portfolios. Out-of-sample performance is evaluated using cumulative return, annualized return, volatility, Sharpe ratio, and maximum drawdown. The project therefore connects factor validation, alpha modeling, risk estimation, and portfolio construction within one systematic investment process.</p>
 </section>
 <section id="data" class="level1">
 <h1>Data</h1>
+<p>The analysis reconstructs the U.S. equity factor dataset from security level data rather than using precomputed factor returns as the primary input. Market data are obtained mainly from CRSP, accounting information from Compustat, and the CRSP/Compustat Merged database is used to connect the two sources. Additional data are used for currency conversion, risk free rates, market returns, and factor metadata.</p>
 <section id="data-sources" class="level2">
 <h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>
-<p>The analysis begins with raw security-level data obtained from WRDS. Market information is primarily sourced from CRSP, while accounting fundamentals are obtained from Compustat. The CRSP/Compustat Merged (CCM) linking table is used to combine market and accounting information at the security level.</p>
-<p>The 153 stock characteristics are derived variables rather than raw data inputs. They are constructed from CRSP and Compustat variables following the definitions and methodology of Jensen, Kelly, and Pedersen (JKP).</p>
+<p>The main data inputs are summarized below.</p>
+<div class="data-source-table">
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -215,270 +224,803 @@ window.Quarto = {
 <thead>
 <tr class="header">
 <th>Component</th>
-<th>Data Source / Methodology</th>
+<th>Data Source</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Stock Returns and Prices</strong></td>
-<td>CRSP</td>
-<td>Monthly returns, prices, shares outstanding, exchange information, and security identifiers.</td>
+<td>Monthly Market Data</td>
+<td>CRSP Monthly Stock File</td>
+<td>Provides monthly stock returns, prices, shares outstanding, market capitalization inputs, exchange information, and security identifiers.</td>
 </tr>
 <tr class="even">
-<td><strong>Accounting Fundamentals</strong></td>
-<td>Compustat Fundamentals Annual &amp; Quarterly</td>
-<td>Obtain balance sheet, income statement, and cash flow variables required to construct accounting-based characteristics.</td>
+<td>Daily Market Data</td>
+<td>CRSP Daily Stock File</td>
+<td>Used to construct characteristics that require daily observations, including measures related to volatility, beta, skewness, liquidity, and extreme returns. It is also used to construct a U.S. market return series.</td>
 </tr>
 <tr class="odd">
-<td><strong>CRSP–Compustat Link</strong></td>
-<td>CRSP/Compustat Merged Database (CCM)</td>
-<td>Link CRSP securities (<code>PERMNO</code>) to Compustat firms (<code>GVKEY</code>).</td>
+<td>Security Information</td>
+<td>CRSP Names File</td>
+<td>Provides time varying security information used to identify common stocks, primary listings, exchanges, and other security characteristics.</td>
 </tr>
 <tr class="even">
-<td><strong>Market Excess Return</strong></td>
-<td>U.S. market return and risk-free rate</td>
-<td>Estimate CAPM betas and factor alphas for factor validation.</td>
+<td>Accounting Fundamentals</td>
+<td>Compustat Fundamentals Annual and Quarterly</td>
+<td>Provides balance sheet, income statement, and cash flow variables used to construct accounting based characteristics.</td>
 </tr>
 <tr class="odd">
-<td><strong>Factor Definitions</strong></td>
-<td>Jensen, Kelly, and Pedersen (JKP)</td>
-<td>Definitions and construction methodology for the 153 stock characteristics.</td>
+<td>CRSP Compustat Link</td>
+<td>CRSP/Compustat Merged Link History</td>
+<td>Maps CRSP securities identified by <code>PERMNO</code> to Compustat firms identified by <code>GVKEY</code>, allowing market and accounting information to be combined.</td>
+</tr>
+<tr class="even">
+<td>Currency Conversion</td>
+<td>Compustat Daily Exchange Rates</td>
+<td>Converts non U.S. dollar accounting values, primarily Canadian dollar observations, into U.S. dollars before combining them with market data.</td>
+</tr>
+<tr class="odd">
+<td>Risk Free Rate</td>
+<td>Fama French Monthly Risk Free Rate</td>
+<td>Used to calculate excess market returns and support CAPM based factor validation.</td>
+</tr>
+<tr class="even">
+<td>Market Return</td>
+<td>JKP U.S. Market Return and CRSP Based Market Return</td>
+<td>The JKP market excess return series is used for the historical validation sample. A market return constructed from CRSP daily data is used to extend the series through 2025.</td>
+</tr>
+<tr class="odd">
+<td>Factor Metadata</td>
+<td>JKP Factor Details</td>
+<td>Provides the definitions and identifiers of the 153 factors, their expected return direction, whether they were significant in the original literature, and the sample period used in the original study.</td>
 </tr>
 </tbody>
 </table>
+</div>
+<p>The construction of the 153 stock characteristics follows the definitions and methodology of Jensen, Kelly, and Pedersen. The raw CRSP and Compustat variables are therefore treated as inputs from which the characteristics are constructed, rather than as the final factor data themselves.</p>
 </section>
-<section id="data-construction-pipeline" class="level2">
-<h2 class="anchored" data-anchor-id="data-construction-pipeline">Data Construction Pipeline</h2>
-<p>The complete data processing pipeline from WRDS raw data to factor validation results is summarized below.</p>
-<p>CRSP market data and Compustat accounting fundamentals are first linked at the security level using the CCM linking table. The merged data are organized as a monthly security-level panel, where each observation represents one security in one month.</p>
-<p>Stock characteristics are then constructed using the methodology of Jensen, Kelly, and Pedersen. Each month, securities are sorted cross sectionally according to each characteristic. These rankings are used to form characteristic portfolios, from which long-short factor returns are calculated. Repeating this procedure across the full set of characteristics produces 153 monthly factor-return series that are subsequently used in the factor validation analysis.</p>
+<section id="data-construction-overview" class="level2">
+<h2 class="anchored" data-anchor-id="data-construction-overview">Data Construction Overview</h2>
+<p>The raw datasets are combined in several stages to create a monthly stock panel that contains the information required to construct the 153 JKP characteristics.</p>
+<p>CRSP monthly data provide the basic security market information, while CRSP Names data are used to identify the characteristics of each security at each point in time. The CCM linking table connects CRSP securities to Compustat firms. Compustat annual and quarterly fundamentals are standardized and then matched to the security panel using only accounting information that would have been available by each month end. CRSP daily data are used separately to construct characteristics that require higher frequency information.</p>
+<p>The resulting monthly security dataset is then used to construct the 153 stock characteristics. These characteristics provide the inputs for the later predictive modeling and portfolio analysis. They are also used to sort stocks into portfolios, producing the 153 monthly factor return series used in the factor validation analysis.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">flowchart TD
-
-    A["CRSP Market Data"] --&gt; D["Security Month Panel"]
-    B["Compustat Fundamentals"] --&gt; D
-    C["CCM Link Table"] --&gt; D
-
-    D --&gt; E["153 Stock Characteristics"]
-
-    E --&gt; F["Cross-Sectional Sorting"]
-
-    F --&gt; G["Factor Portfolios"]
-
-    G --&gt; H["153 Factor Returns"]
-
-    H --&gt; I["CAPM Alpha Tests"]
-
-    J["Market Excess Return"] --&gt; I
-
-    I --&gt; K["Multiple Testing"]
-
-    K --&gt; L["Factor Replication Results"]
-</pre>
+<svg width="672" height="480" viewbox="0.00 0.00 642.64 447.40" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 443.4)">
+<title>DataPipeline</title>
+<!-- A -->
+<g id="node1" class="node">
+<title>A</title>
+<path fill="#063763" stroke="#0a4a78" d="M118.64,-439.4C118.64,-439.4 11.79,-439.4 11.79,-439.4 5.79,-439.4 -0.21,-433.4 -0.21,-427.4 -0.21,-427.4 -0.21,-415.4 -0.21,-415.4 -0.21,-409.4 5.79,-403.4 11.79,-403.4 11.79,-403.4 118.64,-403.4 118.64,-403.4 124.64,-403.4 130.64,-409.4 130.64,-415.4 130.64,-415.4 130.64,-427.4 130.64,-427.4 130.64,-433.4 124.64,-439.4 118.64,-439.4"></path>
+<text text-anchor="middle" x="65.21" y="-418.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">CRSP Monthly Data</text>
+</g>
+<!-- B -->
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#063763" stroke="#0a4a78" d="M274.57,-439.4C274.57,-439.4 181.85,-439.4 181.85,-439.4 175.85,-439.4 169.85,-433.4 169.85,-427.4 169.85,-427.4 169.85,-415.4 169.85,-415.4 169.85,-409.4 175.85,-403.4 181.85,-403.4 181.85,-403.4 274.57,-403.4 274.57,-403.4 280.57,-403.4 286.57,-409.4 286.57,-415.4 286.57,-415.4 286.57,-427.4 286.57,-427.4 286.57,-433.4 280.57,-439.4 274.57,-439.4"></path>
+<text text-anchor="middle" x="228.21" y="-418.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">CRSP Daily Data</text>
+</g>
+<!-- A&#45;&gt;B -->
+<!-- E -->
+<g id="node5" class="node">
+<title>E</title>
+<path fill="#063763" stroke="#0a4a78" d="M372.27,-360.4C372.27,-360.4 260.16,-360.4 260.16,-360.4 254.16,-360.4 248.16,-354.4 248.16,-348.4 248.16,-348.4 248.16,-336.4 248.16,-336.4 248.16,-330.4 254.16,-324.4 260.16,-324.4 260.16,-324.4 372.27,-324.4 372.27,-324.4 378.27,-324.4 384.27,-330.4 384.27,-336.4 384.27,-336.4 384.27,-348.4 384.27,-348.4 384.27,-354.4 378.27,-360.4 372.27,-360.4"></path>
+<text text-anchor="middle" x="316.21" y="-339.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">Security Month Panel</text>
+</g>
+<!-- A&#45;&gt;E -->
+<g id="edge4" class="edge">
+<title>A-&gt;E</title>
+<path fill="none" stroke="#8a8a8a" d="M65.21,-403.38C65.21,-379.96 65.21,-342 65.21,-342 65.21,-342 241.46,-342 241.46,-342"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="241.46,-344.28 247.96,-342 241.46,-339.73 241.46,-344.28"></polygon>
+</g>
+<!-- C -->
+<g id="node3" class="node">
+<title>C</title>
+<path fill="#063763" stroke="#0a4a78" d="M472.16,-439.4C472.16,-439.4 338.26,-439.4 338.26,-439.4 332.26,-439.4 326.26,-433.4 326.26,-427.4 326.26,-427.4 326.26,-415.4 326.26,-415.4 326.26,-409.4 332.26,-403.4 338.26,-403.4 338.26,-403.4 472.16,-403.4 472.16,-403.4 478.16,-403.4 484.16,-409.4 484.16,-415.4 484.16,-415.4 484.16,-427.4 484.16,-427.4 484.16,-433.4 478.16,-439.4 472.16,-439.4"></path>
+<text text-anchor="middle" x="405.21" y="-418.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">Compustat Fundamentals</text>
+</g>
+<!-- B&#45;&gt;C -->
+<!-- B&#45;&gt;E -->
+<g id="edge5" class="edge">
+<title>B-&gt;E</title>
+<path fill="none" stroke="#8a8a8a" d="M267.16,-403.08C267.16,-403.08 267.16,-367.12 267.16,-367.12"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="269.44,-367.12 267.16,-360.62 264.89,-367.12 269.44,-367.12"></polygon>
+</g>
+<!-- D -->
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#063763" stroke="#0a4a78" d="M622.57,-439.4C622.57,-439.4 535.85,-439.4 535.85,-439.4 529.85,-439.4 523.85,-433.4 523.85,-427.4 523.85,-427.4 523.85,-415.4 523.85,-415.4 523.85,-409.4 529.85,-403.4 535.85,-403.4 535.85,-403.4 622.57,-403.4 622.57,-403.4 628.57,-403.4 634.57,-409.4 634.57,-415.4 634.57,-415.4 634.57,-427.4 634.57,-427.4 634.57,-433.4 628.57,-439.4 622.57,-439.4"></path>
+<text text-anchor="middle" x="579.21" y="-418.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">CCM Link Table</text>
+</g>
+<!-- C&#45;&gt;D -->
+<!-- C&#45;&gt;E -->
+<g id="edge6" class="edge">
+<title>C-&gt;E</title>
+<path fill="none" stroke="#8a8a8a" d="M355.36,-403.08C355.36,-403.08 355.36,-367.12 355.36,-367.12"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="357.64,-367.12 355.36,-360.62 353.09,-367.12 357.64,-367.12"></polygon>
+</g>
+<!-- D&#45;&gt;E -->
+<g id="edge7" class="edge">
+<title>D-&gt;E</title>
+<path fill="none" stroke="#8a8a8a" d="M579.21,-403.38C579.21,-379.96 579.21,-342 579.21,-342 579.21,-342 390.78,-342 390.78,-342"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="390.78,-339.73 384.28,-342 390.78,-344.28 390.78,-339.73"></polygon>
+</g>
+<!-- F -->
+<g id="node6" class="node">
+<title>F</title>
+<path fill="#063763" stroke="#0a4a78" d="M382.43,-281.4C382.43,-281.4 250,-281.4 250,-281.4 244,-281.4 238,-275.4 238,-269.4 238,-269.4 238,-257.4 238,-257.4 238,-251.4 244,-245.4 250,-245.4 250,-245.4 382.43,-245.4 382.43,-245.4 388.43,-245.4 394.43,-251.4 394.43,-257.4 394.43,-257.4 394.43,-269.4 394.43,-269.4 394.43,-275.4 388.43,-281.4 382.43,-281.4"></path>
+<text text-anchor="middle" x="316.21" y="-260.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">153 Stock Characteristics</text>
+</g>
+<!-- E&#45;&gt;F -->
+<g id="edge8" class="edge">
+<title>E-&gt;F</title>
+<path fill="none" stroke="#8a8a8a" d="M316.21,-324.08C316.21,-324.08 316.21,-288.12 316.21,-288.12"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="318.49,-288.12 316.21,-281.62 313.94,-288.12 318.49,-288.12"></polygon>
+</g>
+<!-- G -->
+<g id="node7" class="node">
+<title>G</title>
+<path fill="#063763" stroke="#0a4a78" d="M372.86,-202.4C372.86,-202.4 259.56,-202.4 259.56,-202.4 253.56,-202.4 247.56,-196.4 247.56,-190.4 247.56,-190.4 247.56,-178.4 247.56,-178.4 247.56,-172.4 253.56,-166.4 259.56,-166.4 259.56,-166.4 372.86,-166.4 372.86,-166.4 378.86,-166.4 384.86,-172.4 384.86,-178.4 384.86,-178.4 384.86,-190.4 384.86,-190.4 384.86,-196.4 378.86,-202.4 372.86,-202.4"></path>
+<text text-anchor="middle" x="316.21" y="-181.1" font-family="Arial" font-size="11.00" fill="#b8d9f2">Characteristic Sorting</text>
+</g>
+<!-- F&#45;&gt;G -->
+<g id="edge9" class="edge">
+<title>F-&gt;G</title>
+<path fill="none" stroke="#8a8a8a" d="M316.21,-245.08C316.21,-245.08 316.21,-209.12 316.21,-209.12"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="318.49,-209.12 316.21,-202.62 313.94,-209.12 318.49,-209.12"></polygon>
+</g>
+<!-- H -->
+<g id="node8" class="node">
+<title>H</title>
+<path fill="#063763" stroke="#0a4a78" d="M379.96,-123.6C379.96,-123.6 252.46,-123.6 252.46,-123.6 246.46,-123.6 240.46,-117.6 240.46,-111.6 240.46,-111.6 240.46,-90.8 240.46,-90.8 240.46,-84.8 246.46,-78.8 252.46,-78.8 252.46,-78.8 379.96,-78.8 379.96,-78.8 385.96,-78.8 391.96,-84.8 391.96,-90.8 391.96,-90.8 391.96,-111.6 391.96,-111.6 391.96,-117.6 385.96,-123.6 379.96,-123.6"></path>
+<text text-anchor="middle" x="316.21" y="-104.5" font-family="Arial" font-size="11.00" fill="#b8d9f2">Capped Value Weighted</text>
+<text text-anchor="middle" x="316.21" y="-91.3" font-family="Arial" font-size="11.00" fill="#b8d9f2">Portfolios</text>
+</g>
+<!-- G&#45;&gt;H -->
+<g id="edge10" class="edge">
+<title>G-&gt;H</title>
+<path fill="none" stroke="#8a8a8a" d="M316.21,-166.35C316.21,-166.35 316.21,-130.17 316.21,-130.17"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="318.49,-130.17 316.21,-123.67 313.94,-130.17 318.49,-130.17"></polygon>
+</g>
+<!-- I -->
+<g id="node9" class="node">
+<title>I</title>
+<path fill="#063763" stroke="#0a4a78" d="M367.37,-36C367.37,-36 265.06,-36 265.06,-36 259.06,-36 253.06,-30 253.06,-24 253.06,-24 253.06,-12 253.06,-12 253.06,-6 259.06,0 265.06,0 265.06,0 367.37,0 367.37,0 373.37,0 379.37,-6 379.37,-12 379.37,-12 379.37,-24 379.37,-24 379.37,-30 373.37,-36 367.37,-36"></path>
+<text text-anchor="middle" x="316.21" y="-14.7" font-family="Arial" font-size="11.00" fill="#b8d9f2">153 Factor Returns</text>
+</g>
+<!-- H&#45;&gt;I -->
+<g id="edge11" class="edge">
+<title>H-&gt;I</title>
+<path fill="none" stroke="#8a8a8a" d="M316.21,-78.9C316.21,-78.9 316.21,-42.65 316.21,-42.65"></path>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" points="318.49,-42.65 316.21,-36.15 313.94,-42.65 318.49,-42.65"></polygon>
+</g>
+</g>
+</svg>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
 </section>
-<section id="sample-design-and-timing" class="level2">
-<h2 class="anchored" data-anchor-id="sample-design-and-timing">Sample Design and Timing</h2>
+<section id="security-month-panel-construction" class="level2">
+<h2 class="anchored" data-anchor-id="security-month-panel-construction">Security Month Panel Construction</h2>
+<p>The first stage of the data construction creates a monthly panel in which each observation represents one CRSP security in one month. This panel provides the common structure onto which accounting information and stock characteristics are subsequently added.</p>
+<p>The construction begins with the CRSP monthly stock file. Duplicate monthly security observations are removed, and CRSP trading dates are converted to calendar month-end dates. Stock price and shares outstanding are used to calculate security market equity,</p>
+<p><span class="math display">\[
+ME_{i,t}
+=
+|P_{i,t}| \times Shares_{i,t}
+\]</span></p>
+<p>For firms with multiple securities, market equity is also aggregated at the company level using the CRSP company identifier (<code>PERMCO</code>).</p>
+<p>CRSP Names data are then matched to the monthly observations using the historical period for which each name record is valid. This ensures that security information is measured as it existed at the corresponding point in time rather than using a firm’s current classification retrospectively. The resulting information is used to identify common stocks, primary U.S. exchanges, regular trading observations, and active securities. These conditions are combined to create the stock-universe eligibility indicator used later in factor construction.</p>
+<p>The monthly Fama-French risk-free rate is also merged into the panel. Monthly excess stock returns are calculated as</p>
+<p><span class="math display">\[
+r^{exc}_{i,t}
+=
+r_{i,t}-r_{f,t}
+\]</span></p>
+<p>CRSP identifies securities using <code>PERMNO</code>, whereas Compustat identifies firms using <code>GVKEY</code>. The CCM link history is therefore used to assign the appropriate Compustat identifier to each CRSP security. Link start and end dates are respected so that only links valid at the corresponding CRSP observation date are used.</p>
+<p>Accounting information is prepared separately from Compustat Fundamentals Annual and Quarterly. The accounting datasets are standardized to create consistent definitions across annual and quarterly reports, and non-U.S.-dollar observations are converted to U.S. dollars where necessary.</p>
+<p>To avoid using financial information before it would have been available to investors, each accounting report is assumed to become available four months after its fiscal period end. For each monthly security observation, the most recent annual and quarterly reports available by that month end are identified. When both are available, the more recent report is used, with the other source providing a fallback when a required variable is missing.</p>
+<p>The result is a monthly security panel containing market information, security identifiers, eligibility indicators, excess returns, and the most recently available accounting information for each stock. This panel forms the base dataset for the construction of the 153 stock characteristics described in the next section.</p>
+</section>
+<section id="characteristic-construction" class="level2">
+<h2 class="anchored" data-anchor-id="characteristic-construction">Characteristic Construction</h2>
+<p>The monthly security panel is used to construct the 153 stock characteristics studied by Jensen, Kelly, and Pedersen. Rather than treating these characteristics as separate raw datasets, they are calculated from the market and accounting variables assembled in the previous section.</p>
+<p>The characteristics are constructed at the individual stock level. Each observation therefore represents the value of a particular characteristic for a particular security at a particular month end. The construction follows the JKP definitions while preserving the point-in-time structure of the underlying data.</p>
+<p>The 153 characteristics can be broadly divided into several groups.</p>
+<p><strong>Accounting Characteristics</strong> are constructed primarily from Compustat annual and quarterly fundamentals. These include measures related to profitability, investment, asset growth, accruals, leverage, financing activity, and financial strength. For example, profitability measures compare earnings or operating profits with assets or book equity, while investment measures capture changes in assets, capital expenditure, or inventories over time.</p>
+<p><strong>Valuation Characteristics</strong> combine accounting information with market equity. A simple example is the book-to-market ratio,</p>
+<p><span class="math display">\[
+BE/ME_{i,t}
+=
+\frac{\text{Book Equity}_{i,t}}
+{\text{Market Equity}_{i,t}}
+\]</span></p>
+<p>Similar measures are constructed using assets, debt, sales, earnings, cash flow, and other accounting quantities relative to market value.</p>
+<p><strong>Return Characteristics</strong> are constructed from the historical return record of each security. These include momentum, short-term reversal, and seasonality measures calculated over different historical windows. Because these signals require prior returns, their availability depends on the amount of return history available for each stock.</p>
+<p><strong>Daily Market Characteristics</strong> use CRSP daily observations to capture information that cannot be measured accurately from monthly returns alone. These include measures of beta, volatility, idiosyncratic volatility, skewness, extreme daily returns, turnover, trading activity, and liquidity. Depending on the characteristic, the calculations use rolling daily windows such as approximately one month, six months, or one year.</p>
+<p>Finally, several characteristics require additional combinations of accounting and market information or intermediate statistical calculations. These include measures such as Quality Minus Junk components, financial distress scores, mispricing measures, residual momentum, and other composite signals.</p>
+<p>The different groups of characteristics are constructed separately and then merged by <code>PERMNO</code> and month end into a common security-month dataset. The final dataset contains all 153 JKP characteristics together with the stock identifiers, returns, market equity, and eligibility information required for subsequent analysis.</p>
+<p>Conceptually, the resulting dataset has the following structure:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Security</th>
+<th>Month</th>
+<th>Market Data</th>
+<th>Accounting Data</th>
+<th style="text-align: right;">Characteristic 1</th>
+<th style="text-align: right;">Characteristic 2</th>
+<th>…</th>
+<th style="text-align: right;">Characteristic 153</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Stock A</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td>…</td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{1,A,t}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(x_{2,A,t}\)</span></td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{153,A,t}\)</span></td>
+</tr>
+<tr class="even">
+<td>Stock B</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td>…</td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{1,B,t}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(x_{2,B,t}\)</span></td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{153,B,t}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Stock C</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td>…</td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{1,C,t}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(x_{2,C,t}\)</span></td>
+<td>…</td>
+<td style="text-align: right;"><span class="math inline">\(x_{153,C,t}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Not every characteristic is available for every stock and month. Some measures require accounting information or several years of historical observations, while others require sufficient daily return history. When the required information is unavailable, the characteristic is left missing rather than being artificially filled. Factor portfolios are subsequently formed using the stocks with valid observations for each characteristic and month.</p>
+</section>
+<section id="factor-portfolio-construction" class="level2">
+<h2 class="anchored" data-anchor-id="factor-portfolio-construction">Factor Portfolio Construction</h2>
+<p>The 153 stock characteristics are converted into monthly factor returns using a common portfolio construction procedure based on Jensen, Kelly, and Pedersen. For each characteristic and each month, eligible U.S. stocks are sorted into characteristic portfolios using information available at the end of the formation month.</p>
+<p>The procedure begins by identifying eligible stocks with positive market equity. Each month, the 20th and 80th percentiles of market equity are calculated using NYSE stocks. The NYSE 20th percentile is used to define the non-micro stock universe, while the NYSE 80th percentile is used to limit the influence of the largest firms in portfolio weighting.</p>
+<p>For each characteristic, the tercile breakpoints are determined from the characteristic distribution among non-micro stocks. All eligible stocks, including micro stocks, are then assigned to the low, middle, or high tercile using these same breakpoints. This approach prevents very small stocks from determining the portfolio breakpoints while still allowing them to enter the final portfolios.</p>
+<p>Portfolio returns are calculated using capped value weights. For stock <span class="math inline">\(i\)</span> in month <span class="math inline">\(t\)</span>, the portfolio weight is proportional to</p>
+<p><span class="math display">\[
+w_{i,t}
+=
+\min
+\left(
+ME_{i,t},
+P_{80,t}^{NYSE}
+\right)
+\]</span></p>
+<p>where <span class="math inline">\(P_{80,t}^{NYSE}\)</span> is the NYSE 80th percentile of market equity in that month. Stocks therefore receive larger weights when they have greater market capitalization, but the weight of very large firms is capped to prevent a small number of stocks from dominating the portfolio.</p>
+<p>The characteristic signal observed at the end of month <span class="math inline">\(t\)</span> is used to form portfolios whose returns are measured in month <span class="math inline">\(t+1\)</span>. The return of the high and low characteristic portfolios is therefore</p>
+<p><span class="math display">\[
+R^{High}_{j,t+1}
+=
+\sum_{i \in High_j}
+w_{i,t} r^{exc}_{i,t+1}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+R^{Low}_{j,t+1}
+=
+\sum_{i \in Low_j}
+w_{i,t} r^{exc}_{i,t+1}
+\]</span></p>
+<p>The factor return is the difference between the high and low portfolio returns,</p>
+<p><span class="math display">\[
+f_{j,t+1}
+=
+d_j
+\left(
+R^{High}_{j,t+1}
+-
+R^{Low}_{j,t+1}
+\right)
+\]</span></p>
+<p>where <span class="math inline">\(d_j\)</span> is either <span class="math inline">\(+1\)</span> or <span class="math inline">\(-1\)</span> according to the direction associated with the factor in the original literature. This sign adjustment ensures that a positive factor return consistently represents the side of the characteristic associated with higher expected returns.</p>
+<p>A factor return is recorded only when both the long and short portfolios contain at least five stocks. The same procedure is repeated for all 153 characteristics and all available months, producing the final monthly U.S. factor return dataset used in the factor validation analysis.</p>
+<p>The resulting factor dataset has one observation for each factor and month:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Factor</th>
+<th>Month</th>
+<th style="text-align: right;">Direction</th>
+<th style="text-align: right;">Factor Return</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Factor 1</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(+1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(f_{1,t}\)</span></td>
+</tr>
+<tr class="even">
+<td>Factor 2</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(f_{2,t}\)</span></td>
+</tr>
+<tr class="odd">
+<td>…</td>
+<td>…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="even">
+<td>Factor 153</td>
+<td>Month <span class="math inline">\(t\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(+1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(f_{153,t}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These monthly factor returns are subsequently used to estimate CAPM alphas and evaluate factor replication under OLS, multiple-testing adjustments, and the empirical Bayes framework.</p>
+</section>
+<section id="sample-coverage-and-timing" class="level2">
+<h2 class="anchored" data-anchor-id="sample-coverage-and-timing">Sample Coverage and Timing</h2>
+<p>The final U.S. factor dataset contains all 153 characteristics and spans January 1950 through December 2025 at a monthly frequency. Because the data requirements differ across characteristics, individual factors do not necessarily begin in the same month. Characteristics that require accounting information or long return histories become available later than characteristics that rely on simpler market variables. The final dataset contains 130,769 valid factor-month observations across the 153 factors.</p>
+<p>The timing of the analysis is designed so that portfolio formation uses only information available at the time of the investment decision. Characteristics measured at the end of month <span class="math inline">\(t\)</span> are used to form portfolios for the return earned in month <span class="math inline">\(t+1\)</span>,</p>
+<p><span class="math display">\[
+X_{i,t}
+\longrightarrow
+R_{i,t+1}
+\]</span></p>
+<p>Accounting information is incorporated only after the four-month reporting lag described above. This ensures that financial statement information is not used before it would have been available to investors. The same timing convention is maintained when the stock characteristics are later used as inputs to the predictive models.</p>
+<p>Different parts of the analysis use different sample periods:</p>
+<div class="sample-period-table">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Analysis</th>
 <th>Sample Period</th>
-<th>Frequency</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>JKP Replication</td>
-<td>Full historical sample</td>
-<td>Monthly</td>
-<td>Reproduce the main factor-validation results reported in JKP</td>
+<td>Full Sample Factor Validation</td>
+<td>1950–2025</td>
+<td>Apply the JKP validation framework and compare the results with those reported by JKP.</td>
 </tr>
 <tr class="even">
-<td>Modern Factor Validation</td>
+<td>Modern Sample Validation</td>
 <td>2000–2019</td>
-<td>Monthly</td>
-<td>Evaluate factor robustness in a more recent sample</td>
+<td>Evaluate whether the evidence for factor replication remains as strong in a common and more recent sample.</td>
 </tr>
 <tr class="odd">
-<td>ML Model Development</td>
-<td>Pre-2020 sample</td>
-<td>Monthly</td>
-<td>Train and tune the predictive models</td>
+<td>Predictive Model Development</td>
+<td>2000-2014</td>
+<td>Estimate and tune the stock return prediction models using data available before the out-of-sample portfolio period.</td>
 </tr>
 <tr class="even">
-<td>Out-of-Sample Backtest</td>
+<td>Out-of-Sample Portfolio Evaluation</td>
 <td>2020–2025</td>
-<td>Monthly</td>
-<td>Evaluate portfolio performance on unseen data</td>
+<td>Evaluate the investment strategies using observations not included in the initial model-development period.</td>
 </tr>
 </tbody>
 </table>
-<p>All characteristics are constructed using information available as of the portfolio formation date. Characteristics observed at month <span class="math inline">\(t\)</span> are used to generate signals for subsequent returns, thereby avoiding look-ahead bias. Following the JKP methodology, accounting information is incorporated only after it becomes publicly available, with a four-month lag after the end of the corresponding fiscal period.</p>
+</div>
+<p>For the time-series replication analysis, the in-sample period is defined separately for each factor using the sample dates reported in its original study. Observations before the beginning of that period form the pre-original sample, while observations after its end form the post-original sample. Factors are included in a comparison only when sufficient observations are available for both the original and out-of-sample periods.</p>
+<p>This separation between the full historical sample, the modern validation period, and the later portfolio evaluation period allows the analysis to distinguish between long-run factor evidence, performance in more recent decades, and genuinely out-of-sample investment results.</p>
 </section>
 </section>
 <section id="factor-validation" class="level1">
 <h1>Factor Validation</h1>
-<p>Jensen, Kelly, and Pedersen (JKP) examine 153 equity factors and evaluate whether their historical return patterns can be successfully replicated. The first objective of this section is to reproduce the main factor-validation results reported in JKP. The same validation framework is then applied to the 2000–2019 period to examine whether these factors remain effective in a more recent market environment.</p>
+<p>Jensen, Kelly, and Pedersen (JKP) study a broad universe of 153 equity factors and evaluate whether the return patterns documented in the asset-pricing literature can be replicated using a consistent empirical framework. Among these factors, 34 were not originally reported as having significant alpha, or were not evaluated in terms of factor return significance. JKP therefore define their headline replication rate using the remaining 119 factors that were reported as significant in the original literature.</p>
+<p>This section first evaluates whether the main US factor-validation results in JKP can be reproduced using our independently constructed factor data. Factor performance is assessed using CAPM alpha, and statistical significance is evaluated under three approaches: ordinary least squares (OLS), the Benjamini–Yekutieli (BY) multiple testing adjustment, and an empirical Bayes (EB) framework. These methods provide increasingly structured ways to account for estimation uncertainty and the large number of factors being tested simultaneously.</p>
+<p>After replicating the full sample US results, we examine several dimensions of robustness, including differences across factor themes, stock size groups, and out-of-sample periods. Finally, the same validation framework is applied to the 2000–2019 period to assess whether the evidence for factor replicability remains as strong in a more recent market environment.</p>
 <section id="validation-methodology" class="level2">
 <h2 class="anchored" data-anchor-id="validation-methodology">Validation Methodology</h2>
-<p>Factor validity is evaluated using the same general framework as JKP. Each factor’s risk-adjusted performance is measured using CAPM alpha. Statistical significance is then evaluated using ordinary least squares (OLS), the Benjamini–Yekutieli (BY) multiple-testing adjustment, and an empirical Bayes (EB) model.</p>
+<p>Following JKP, factor performance is evaluated using CAPM alpha rather than raw returns. Statistical significance is assessed using three approaches: ordinary least squares (OLS), the Benjamini–Yekutieli (BY) multiple-testing adjustment, and an empirical Bayes (EB) model. The full available US history through 2020 is used for the main replication analysis.</p>
 <section id="ordinary-least-squares" class="level3">
 <h3 class="anchored" data-anchor-id="ordinary-least-squares">Ordinary Least Squares</h3>
-<p>The CAPM alpha of each factor is estimated using</p>
+<p>For each factor, CAPM alpha is estimated from</p>
 <p><span class="math display">\[
-f_{i,t}=\alpha_i+\beta_i r_{m,t}+\varepsilon_{i,t}.
+f_{i,t}
+=
+\alpha_i
++
+\beta_i r_{m,t}
++
+\varepsilon_{i,t}
 \]</span></p>
-<p>where:</p>
-<ul>
-<li><span class="math inline">\(f_{i,t}\)</span>: return of factor <span class="math inline">\(i\)</span> at time <span class="math inline">\(t\)</span></li>
-<li><span class="math inline">\(r_{m,t}\)</span>: market excess return at time <span class="math inline">\(t\)</span></li>
-<li><span class="math inline">\(\alpha_i\)</span>: CAPM-adjusted abnormal return of factor <span class="math inline">\(i\)</span></li>
-<li><span class="math inline">\(\beta_i\)</span>: the factor’s market exposure</li>
-<li><span class="math inline">\(\varepsilon_{i,t}\)</span>: the residual return</li>
-</ul>
-<p>OLS tests the null hypothesis</p>
+<p>where <span class="math inline">\(f_{i,t}\)</span> is the factor return, <span class="math inline">\(r_{m,t}\)</span> is the market excess return, and <span class="math inline">\(\alpha_i\)</span> measures the factor’s abnormal return after controlling for market exposure.</p>
+<p>OLS tests</p>
 <p><span class="math display">\[
-H_0:\alpha_i=0.
+H_0:\alpha_i=0
 \]</span></p>
-<p>A factor is considered replicated under OLS when its estimated alpha is positive and statistically significant at the 5% level.</p>
+<p>A factor is classified as replicated when its estimated alpha is positive and statistically significant at the 5% level.</p>
 </section>
 <section id="benjaminiyekutieli-adjustment" class="level3">
 <h3 class="anchored" data-anchor-id="benjaminiyekutieli-adjustment">Benjamini–Yekutieli Adjustment</h3>
-<p>Testing 153 factors simultaneously increases the probability of false discoveries. The BY procedure adjusts the OLS <span class="math inline">\(p\)</span>-values to control the false discovery rate while allowing the tests to be dependent. A factor is considered replicated under BY when</p>
+<p>Testing many factors simultaneously increases the risk of false discoveries. The Benjamini–Yekutieli (BY) procedure adjusts the OLS significance levels to control the false discovery rate while allowing the individual tests to be dependent.</p>
+<p>A factor is classified as replicated under BY when</p>
 <p><span class="math display">\[
 \widehat{\alpha}_i&gt;0
 \qquad\text{and}\qquad
-p_i^{BY}&lt;0.05.
+p_i^{BY}&lt;0.05
 \]</span></p>
-<p>Because BY applies a more conservative significance threshold, its replication rate is generally lower than the unadjusted OLS rate.</p>
+<p>Because the BY adjustment imposes a stricter significance threshold than individual OLS tests, fewer factors are generally classified as replicated.</p>
 </section>
 <section id="empirical-bayes" class="level3">
 <h3 class="anchored" data-anchor-id="empirical-bayes">Empirical Bayes</h3>
-<p>The EB method accounts for common information across factors and shrinks uncertain alpha estimates toward zero and their factor-theme component. The model assumes The EB method shrinks uncertain alpha estimates toward zero while borrowing information from factors within the same economic theme. <span class="math display">\[
-\widehat{{\alpha}}
+<p>The empirical Bayes framework estimates factor alphas jointly rather than treating each factor independently. Noisy alpha estimates are shrunk toward zero while information is shared among factors belonging to the same economic cluster.</p>
+<p>For the US-only model,</p>
+<p><span class="math display">\[
+\widehat{\boldsymbol{\alpha}}
 \mid
-{\alpha}
+\boldsymbol{\alpha}
 \sim
-\mathcal{N}\left({\alpha},\Sigma\right),
-\qquad
-{\alpha}
+\mathcal{N}
+\left(
+\boldsymbol{\alpha},
+\Sigma
+\right)
+\]</span></p>
+<p>with the prior</p>
+<p><span class="math display">\[
+\boldsymbol{\alpha}
 \sim
-\mathcal{N}\left(\mathbf{0},\Theta\right).
+\mathcal{N}
+\left(
+\mathbf{0},
+\Theta
+\right)
 \]</span></p>
-<p>where <span class="math inline">\(\Sigma\)</span> represents estimation uncertainty and</p>
+<p>where</p>
 <p><span class="math display">\[
-\Theta = \tau_s^2I + \tau_c^2MM^\top.
+\Theta
+=
+\tau_w^2 I
++
+\tau_c^2MM^\top
 \]</span></p>
-<p>with <span class="math inline">\(M\)</span> denoting factor-theme membership, <span class="math inline">\(\tau_c^2\)</span> the shared theme-level variation, and <span class="math inline">\(\tau_s^2\)</span> factor-specific variation. The posterior mean is</p>
+<p>Here, <span class="math inline">\(M\)</span> represents factor-cluster membership, <span class="math inline">\(\tau_c^2\)</span> captures variation across cluster-level alphas, and <span class="math inline">\(\tau_w^2\)</span> captures factor-specific variation within clusters. The posterior mean is</p>
 <p><span class="math display">\[
-\mu_{\text{post}} = \Theta(\Theta+\Sigma)^{-1}\widehat{\alpha}.
+\boldsymbol{\mu}_{\mathrm{post}}
+=
+\Theta
+(\Theta+\Sigma)^{-1}
+\widehat{\boldsymbol{\alpha}}
 \]</span></p>
-<p>A factor is considered replicated under EB when the lower bound of its 95% posterior interval is greater than zero.</p>
+<p>A factor is classified as replicated under EB when the lower bound of its 95% posterior interval is greater than zero.</p>
 </section>
 <section id="replication-rate" class="level3">
 <h3 class="anchored" data-anchor-id="replication-rate">Replication Rate</h3>
-<p>Although all 153 factors are used in estimation and multiple-testing adjustment, JKP’s headline replication rate is evaluated only among the 119 factors reported as significant in the original literature. Therefore,</p>
+<p>The full set of 153 factors is used when estimating the validation models. However, JKP identify 34 factors for which the original study either did not report a significant alpha or did not evaluate factor-return significance. These factors are excluded from the headline replication rate, leaving 119 originally significant factors.</p>
+<p>The replication rate is therefore defined as</p>
 <p><span class="math display">\[
 \text{Replication Rate}
 =
-\frac{\#\{\text{replicated factors}\}}
-{\#\{\text{factors tested}\}}.
+\frac{
+\#\{\text{originally significant factors that replicate}\}
+}{
+119
+}
 \]</span></p>
-<p>The methodology is applied to both the full 1926–2020 sample and the 2000–2019 modern subsample.</p>
+<p>The same OLS, BY, and EB framework is later applied to the 2000–2019 subsample to examine whether replication evidence remains as strong in a more recent market environment.</p>
 </section>
 </section>
 <section id="replication-of-jkp-results" class="level2">
 <h2 class="anchored" data-anchor-id="replication-of-jkp-results">Replication of JKP Results</h2>
-<p>All 153 factors are estimated using the 1926–2020 sample, while replication rates are evaluated among the 119 originally significant factors. Our results closely match JKP: OLS, BY, and EB rates are 83.2%, 76.5%, and 83.2%, respectively. Each differs from the corresponding JKP rate by less than one percentage point.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_03.ipynb" data-notebook-cellid="cell-fig-jkp-replication">
-<div id="cell-fig-jkp-replication" class="cell">
+<p>We first examine whether the main US factor-validation results reported by JKP can be reproduced using our independently constructed factor returns. The analysis uses each factor’s full available US history through 2020. Replication rates are evaluated among the 119 factors that were reported as significant in the original literature.</p>
+<p><a href="#fig-alpha-validation" class="quarto-xref">Figure&nbsp;1</a> compares factor-level CAPM alpha estimates under OLS, the Benjamini–Yekutieli (BY) multiple-testing adjustment, and the empirical Bayes (EB) framework. Each point represents the estimated monthly alpha of an individual factor, while the vertical intervals reflect estimation uncertainty. Factors are classified according to whether they were significant in the original literature and whether they remain significant under each validation method.</p>
+<p>Under OLS, most originally significant factors continue to exhibit positive and statistically significant CAPM alpha. The BY adjustment leaves the OLS alpha estimates unchanged but applies a stricter significance threshold to account for multiple testing, resulting in fewer replicated factors. The EB approach instead adjusts both the estimated alpha and its uncertainty by pooling information across related factors and shrinking noisy estimates toward zero and their cluster-level component.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-alpha-validation">
+<div id="cell-fig-alpha-validation" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
-<div id="fig-jkp-replication" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-alpha-validation" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-jkp-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-factors_validation_03-fig-jkp-replication-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-alpha-validation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-alpha-validation-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-jkp-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Replication rates: JKP paper versus this project
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-alpha-validation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: US factor alpha estimates under OLS, BY, and Empirical Bayes
 </figcaption>
 </figure>
 </div>
 </div>
+</div>
+</div>
+<p>Our replication rates are very close to those reported by JKP. OLS produces a replication rate of 81.5%, compared with 82.4% in JKP. After the BY multiple-testing adjustment, the rate declines to 73.1%, compared with 75.6% in the original study. The EB estimate returns to 84.0%, again close to JKP’s 82.4%.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th style="text-align: right;">JKP</th>
+<th style="text-align: right;">This Study</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OLS</td>
+<td style="text-align: right;">82.4%</td>
+<td style="text-align: right;">81.5%</td>
+</tr>
+<tr class="even">
+<td>BY</td>
+<td style="text-align: right;">75.6%</td>
+<td style="text-align: right;">73.1%</td>
+</tr>
+<tr class="odd">
+<td>EB</td>
+<td style="text-align: right;">82.4%</td>
+<td style="text-align: right;">84.0%</td>
+</tr>
+</tbody>
+</table>
+<p>The differences are less than one percentage point across all three methods, indicating that the main US internal-validity results in JKP can be closely reproduced using our independently constructed factor data.</p>
+</section>
+<section id="cross-sectional-robustness" class="level2">
+<h2 class="anchored" data-anchor-id="cross-sectional-robustness">Cross Sectional Robustness</h2>
+<p>After establishing that the aggregate US replication results closely match JKP, we next examine whether the evidence is robust across different groups of factors and stocks. JKP organize the factor universe using hierarchical agglomerative clustering based on correlations among CAPM-residual factor returns. The resulting clusters are intended to capture groups of factors with similar statistical behavior and economic interpretation.</p>
+<section id="factor-clusters" class="level3">
+<h3 class="anchored" data-anchor-id="factor-clusters">Factor Clusters</h3>
+<p>Our clustering procedure also produces 13 groups. Because the cluster identifiers themselves have no economic meaning, <a href="#tbl-factor-clusters" class="quarto-xref">Table&nbsp;1</a> provides an approximate interpretation of each cluster based on the characteristics that dominate the group. These labels are descriptive rather than exact replications of the JKP theme names, since some factors are assigned differently in our clustering results.</p>
+<div class="factor-cluster-table">
+<div id="tbl-factor-clusters" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-factor-clusters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Factor clusters and approximate economic interpretations.
+</figcaption>
+<div aria-describedby="tbl-factor-clusters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 30%">
+<col style="width: 23%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Cluster</th>
+<th style="text-align: right;"># Factors</th>
+<th>Approximate Interpretation</th>
+<th>Representative Factors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td style="text-align: right;">14</td>
+<td>Low Leverage / Balance-Sheet Strength</td>
+<td><code>age</code>, <code>netdebt_me</code>, <code>tangibility</code>, <code>z_score</code>, <code>cash_at</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td style="text-align: right;">21</td>
+<td>Low Risk</td>
+<td><code>beta_60m</code>, <code>betabab_1260d</code>, <code>ivol_ff3_21d</code>, <code>rvol_21d</code>, <code>rmax5_21d</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td style="text-align: right;">9</td>
+<td>Size / Liquidity</td>
+<td><code>market_equity</code>, <code>ami_126d</code>, <code>dolvol_126d</code>, <code>prc</code>, <code>zero_trades_252d</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td style="text-align: right;">24</td>
+<td>Investment</td>
+<td><code>at_gr1</code>, <code>capx_gr2</code>, <code>inv_gr1a</code>, <code>ppeinv_gr1a</code>, <code>noa_gr1a</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td style="text-align: right;">15</td>
+<td>Value</td>
+<td><code>be_me</code>, <code>debt_me</code>, <code>ebitda_mev</code>, <code>fcf_me</code>, <code>sale_me</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td style="text-align: right;">9</td>
+<td>Quality</td>
+<td><code>gp_at</code>, <code>cop_atl1</code>, <code>op_at</code>, <code>opex_at</code>, <code>sale_bev</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td style="text-align: right;">14</td>
+<td>Seasonality / Accruals</td>
+<td><code>seas_11_15an</code>, <code>seas_16_20an</code>, <code>corr_1260d</code>, <code>coskew_21d</code>, <code>taccruals_at</code></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td style="text-align: right;">4</td>
+<td>Debt Issuance</td>
+<td><code>dbnetis_at</code>, <code>debt_gr3</code>, <code>fnl_gr1a</code>, <code>nfna_gr1a</code></td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td style="text-align: right;">8</td>
+<td>Profit Growth / Quality</td>
+<td><code>dsale_dinv</code>, <code>ocf_at_chg1</code>, <code>sale_emp_gr1</code>, <code>tax_gr1a</code>, <code>qmj_growth</code></td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td style="text-align: right;">12</td>
+<td>Profitability</td>
+<td><code>ebit_bev</code>, <code>ni_be</code>, <code>ocf_at</code>, <code>ope_be</code>, <code>qmj_prof</code></td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td style="text-align: right;">9</td>
+<td>Earnings Growth / Surprises</td>
+<td><code>niq_su</code>, <code>saleq_su</code>, <code>niq_at_chg1</code>, <code>ret_12_7</code>, <code>seas_1_1an</code></td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td style="text-align: right;">6</td>
+<td>Skewness / Short-Term Reversal</td>
+<td><code>iskew_ff3_21d</code>, <code>rskew_21d</code>, <code>ret_1_0</code>, <code>rmax5_rvol_21d</code></td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td style="text-align: right;">8</td>
+<td>Momentum</td>
+<td><code>ret_3_1</code>, <code>ret_6_1</code>, <code>ret_9_1</code>, <code>ret_12_1</code>, <code>resff3_12_1</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
 </div>
 </div>
 </section>
-<section id="factor-themes" class="level2">
-<h2 class="anchored" data-anchor-id="factor-themes">Factor Themes</h2>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_03.ipynb" data-notebook-cellid="cell-fig-theme-heatmap">
-<div id="cell-fig-theme-heatmap" class="cell">
+<section id="replication-across-stock-size-groups" class="level3">
+<h3 class="anchored" data-anchor-id="replication-across-stock-size-groups">Replication Across Stock Size Groups</h3>
+<p>A potential concern is that factor replication may be driven primarily by small or illiquid stocks, where factor effects may be stronger. To examine this possibility, we reconstruct the factors separately within five market-capitalization groups and apply the same empirical Bayes replication criterion.</p>
+<p><a href="#fig-size-replication" class="quarto-xref">Figure&nbsp;2</a> shows that replication remains substantial across most size groups. The replication rates are 73.1% for mega-cap stocks, 79.8% for large stocks, 85.7% for small stocks, and 84.9% for micro stocks. The nano-stock sample has the lowest replication rate at 63.0%.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-size-replication">
+<div id="cell-fig-size-replication" class="cell">
 <div class="cell-output cell-output-display">
-<div id="fig-theme-heatmap" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-size-replication" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-theme-heatmap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-factors_validation_03-fig-theme-heatmap-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-size-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-size-replication-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-theme-heatmap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Average factor correlations within and across themes
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-size-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Empirical Bayes replication rates across size groups
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<p>The factors are grouped into 13 themes based on CAPM-residual correlations over 1975–2020. The heatmap shows strong within-theme correlations for several themes, while the EB replication rates reveal substantial variation across themes. Momentum, Accruals, Debt Issuance, Low Risk, and Quality achieve 100% replication, compared with 25% for Size and 0% for Low Leverage. Results for themes with few factors should be interpreted cautiously.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_03.ipynb" data-notebook-cellid="cell-fig-theme-replication">
-<div id="cell-fig-theme-replication" class="cell">
+<p>The pattern is broadly consistent with JKP. Their corresponding replication rates are 77.3%, 79.8%, 85.7%, 85.7%, and 68.1% for mega, large, small, micro, and nano stocks, respectively. In both studies, replication remains high among large and mega stocks rather than being confined to small or micro stocks, while the nano-stock sample shows noticeably weaker evidence.</p>
+<p>Overall, these results suggest that factor replication is not solely a small- or micro-cap phenomenon, although the strength of the evidence varies across the size distribution.</p>
+</section>
+<section id="replication-across-factor-clusters" class="level3">
+<h3 class="anchored" data-anchor-id="replication-across-factor-clusters">Replication Across Factor Clusters</h3>
+<p>We next examine whether factor replication is concentrated in only a few types of factors. <a href="#fig-cluster-replication" class="quarto-xref">Figure&nbsp;3</a> reports the empirical Bayes replication rate for each of the 13 factor clusters introduced above.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-cluster-replication">
+<div id="cell-fig-cluster-replication" class="cell">
 <div class="cell-output cell-output-display">
-<div id="fig-theme-replication" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-cluster-replication" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-theme-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-factors_validation_03-fig-theme-replication-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-cluster-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-cluster-replication-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-theme-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: EB replication rates by factor theme
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cluster-replication-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Empirical Bayes replication rates across factor clusters
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
+<p>Replication rates differ substantially across clusters. Clusters 13, 8, and 4 have the highest replication rates, while Clusters 1 and 3 have the lowest. Based on the approximate interpretations in <a href="#tbl-factor-clusters" class="quarto-xref">Table&nbsp;1</a>, these two weaker groups are mainly related to Low Leverage / Balance Sheet Strength and Size / Liquidity.</p>
+<p>A similar pattern appears in JKP. Low Leverage and Size are the only two of their 13 themes with replication rates below 50%, while the other 11 themes have replication rates of at least 50%. Although our cluster assignments do not exactly match those in JKP, the weaker performance of similar groups is broadly consistent with the original study.</p>
+<p>Together, <a href="#fig-size-replication" class="quarto-xref">Figure&nbsp;2</a> and <a href="#fig-cluster-replication" class="quarto-xref">Figure&nbsp;3</a> show that factor replication is not limited to a particular stock size or a small set of factor types. However, the strength of replication varies across both stock size and factor category.</p>
+</section>
+<section id="clusters-alpha-across-stock-size-groups" class="level3">
+<h3 class="anchored" data-anchor-id="clusters-alpha-across-stock-size-groups">Clusters Alpha Across Stock Size Groups</h3>
+<p>The previous two analyses examine stock size and factor clusters separately. We next consider both dimensions together by comparing the average alpha of each cluster across the five stock size groups. This allows us to examine not only whether factors replicate, but also whether the magnitude and ranking of factor themes remain similar across different segments of the stock market.</p>
+<p>For each size group, <a href="#fig-cluster-alpha-size" class="quarto-xref">Figure&nbsp;4</a> reports the average OLS alpha for each of the 13 factor clusters.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-cluster-alpha-size">
+<div id="cell-fig-cluster-alpha-size" class="cell">
+<div class="cell-output cell-output-display">
+<div id="fig-cluster-alpha-size" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cluster-alpha-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-cluster-alpha-size-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cluster-alpha-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Average OLS alphas across cluster &amp; size groups
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The results show some similarities in factor performance across stock size groups, although the ordering of the clusters is less consistent than in JKP. The Spearman rank correlation between the cluster alphas of mega and micro stocks is 50.0%, while the correlation between mega and nano stocks is 15.4%.</p>
+<p>JKP report corresponding correlations of 73% for mega versus micro stocks and 36% for mega versus nano stocks. Their results therefore show greater consistency across stock sizes than ours. Nevertheless, both analyses show the same general pattern: the rankings for mega and micro stocks are more similar, while nano stocks differ more substantially from the larger stock groups.</p>
+<p>These results indicate that factor alphas vary across different parts of the market. In particular, the relative importance of the 13 factor clusters changes with stock size, with the largest differences appearing among nano stocks. At the same time, the results in <a href="#fig-size-replication" class="quarto-xref">Figure&nbsp;2</a> show that substantial factor replication remains present across most stock size groups.</p>
+</section>
+</section>
+<section id="time-series-external-validity" class="level2">
+<h2 class="anchored" data-anchor-id="time-series-external-validity">Time Series External Validity</h2>
+<p>The previous analyses use the full available sample to evaluate factor replication. We next examine whether factor performance persists outside the periods originally studied in the literature. For each factor, the original study period is treated as the in sample period, while observations before and after that period are treated as out of sample.</p>
+<p><a href="#fig-oos-alpha" class="quarto-xref">Figure&nbsp;5</a> compares each factor’s in sample CAPM alpha with its out of sample alpha. The first panel uses observations before the original study period, the second uses observations after the original study period, and the third combines both periods.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-oos-alpha">
+<div id="cell-fig-oos-alpha" class="cell">
+<div class="cell-output cell-output-display">
+<div id="fig-oos-alpha" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-oos-alpha-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-oos-alpha-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-oos-alpha-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: In sample and out of sample CAPM alphas for US factors
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The relationship between in sample and out of sample performance is positive in all three cases. Before the original sample, 79 of 92 factors have positive out of sample alpha, and the GLS slope is 0.61 with a t statistic of 3.80. After the original sample, 99 of 117 factors have positive alpha, with a slope of 0.25 and a t statistic of 3.87. When the periods before and after the original sample are combined, 106 of 117 factors have positive alpha, and the estimated slope is 0.30 with a t statistic of 4.19.</p>
+<p>All three slopes are significantly positive, indicating that factors with higher alpha during the original study period also tend to have higher alpha outside that period. However, the slopes are well below one, showing that the strength of factor performance declines outside the original sample. The decline is particularly clear after the original study period, where the slope falls from 0.61 before the sample to 0.25 after the sample.</p>
+<p>These results closely resemble the pattern reported by JKP, who estimate GLS slopes of 0.57 before the original sample, 0.26 after the original sample, and 0.35 when both periods are combined. JKP also document a decline in average alpha from 0.49% per month in sample to 0.26% after the original sample, corresponding to a 47% reduction.</p>
+<p>Overall, the evidence suggests that factor performance persists out of sample, but with meaningful attenuation. The positive relationship between in sample and out of sample alpha is inconsistent with a setting in which the original results are entirely driven by data mining, while the lower slopes indicate that the magnitude of the original factor performance does not fully persist.</p>
 </section>
 <section id="modern-sample-validation" class="level2">
 <h2 class="anchored" data-anchor-id="modern-sample-validation">Modern Sample Validation</h2>
-<p>Replication rates decline substantially in the 2000–2019 subsample. OLS falls from 83.2% to 58.8%, BY from 76.5% to 20.2%, and EB from 83.2% to 42.0%. This suggests weaker factor robustness in the modern period, although the shorter sample also reduces statistical power.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_03.ipynb" data-notebook-cellid="cell-fig-modern-comparison">
-<div id="cell-fig-modern-comparison" class="cell">
+<p>The previous analyses focus on reproducing the main results in JKP using the full available US sample. As an extension, we apply the same OLS, BY, and empirical Bayes validation procedures to a common 2000–2019 sample. This provides a direct comparison of factor replication in a more recent market environment while keeping the validation framework unchanged.</p>
+<p><a href="#fig-modern-validation" class="quarto-xref">Figure&nbsp;6</a> compares the replication rates from the full sample with those obtained using only observations from 2000 through 2019.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\factors_validation_04.ipynb" data-notebook-cellid="cell-fig-modern-validation">
+<div id="cell-fig-modern-validation" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-display">
-<div id="fig-modern-comparison" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-modern-validation" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-modern-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-factors_validation_03-fig-modern-comparison-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-modern-validation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-factors_validation_04-fig-modern-validation-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-modern-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Full sample versus modern sample replication rates
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-modern-validation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Replication rates in the full sample and the 2000–2019 sample
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
+<p>Replication rates decline under all three methods. Under OLS, the rate falls from 81.5% in the full sample to 55.5% in 2000–2019, with 66 of the 119 originally significant factors remaining significant. The decline is substantially larger after the BY adjustment, from 73.1% to 20.2%, corresponding to 24 of 119 factors. Under empirical Bayes, the replication rate decreases from 84.0% to 37.8%, with 45 of 119 factors classified as replicated.</p>
+<p>The empirical Bayes estimates also change in the more recent sample. The estimated cluster dispersion parameter, <span class="math inline">\(\tau_c\)</span>, decreases from 0.3231% per month in the full sample to 0.2135%, while the within cluster dispersion parameter, <span class="math inline">\(\tau_w\)</span>, decreases from 0.1886% to 0.1580%. The smaller dispersion estimates imply stronger shrinkage of uncertain alpha estimates toward zero, contributing to the lower empirical Bayes replication rate.</p>
+<p>These results indicate that the statistical evidence for factor replication is materially weaker during 2000–2019. However, the decline should not be interpreted entirely as evidence that the factors have disappeared. The modern sample contains only 20 years of monthly observations, compared with the much longer histories available for many factors in the full sample. A shorter sample increases estimation uncertainty and lowers statistical power, which is particularly important for the more conservative BY procedure.</p>
+<p>Therefore, the modern sample results are consistent with weaker factor evidence in recent decades, but they also reflect the greater difficulty of establishing statistical significance over a shorter period. Together with the out of sample results above, the evidence suggests that many factor effects persist beyond their original study periods, although their statistical strength and estimated magnitude are substantially weaker in the more recent sample.</p>
 </section>
 </section>
 <section id="alpha-models" class="level1">
@@ -495,7 +1037,7 @@ z_t(x_{i,t})
 \operatorname{rank}_t(x_{i,t})-\mu_{r,t}
 }{
 \sigma_{r,t}
-},
+}
 \]</span></p>
 <p>where <span class="math inline">\(\mu_{r,t}\)</span> and <span class="math inline">\(\sigma_{r,t}\)</span> are the cross-sectional mean and standard deviation of the ranks.</p>
 <p>Profitability combines gross profits over assets (GPOA), return on equity (ROE), return on assets (ROA), cash flow over assets (CFOA), gross margin (GMAR), and low accruals (ACC):</p>
@@ -517,7 +1059,7 @@ z_{\mathrm{GMAR},i,t}
 +
 z_{\mathrm{ACC},i,t}
 \right)
-\right].
+\right]
 \]</span></p>
 <p>Growth measures the five-year growth in the corresponding residual per-share profitability measures, excluding accruals:</p>
 <p><span class="math display">\[
@@ -536,7 +1078,7 @@ z_{\Delta_5\mathrm{CFOA},i,t}
 +
 z_{\Delta_5\mathrm{GMAR},i,t}
 \right)
-\right].
+\right]
 \]</span></p>
 <p>Safety combines low market beta (BAB), low leverage (LEV), low bankruptcy risk based on the O-Score and Z-Score, and low ROE volatility (EVOL):</p>
 <p><span class="math display">\[
@@ -555,7 +1097,7 @@ z_{\mathrm{Z},i,t}
 +
 z_{\mathrm{EVOL},i,t}
 \right)
-\right].
+\right]
 \]</span></p>
 <p>All safety measures are signed so that higher values represent safer firms. The three components are equally weighted to produce the overall quality score:</p>
 <p><span class="math display">\[
@@ -569,7 +1111,7 @@ z_t\left[
 +
 \mathrm{SAFE}_{i,t}
 }{3}
-\right].
+\right]
 \]</span></p>
 <p>When an individual measure is unavailable, the remaining available measures are averaged. A higher <span class="math inline">\(Q_{i,t}\)</span> indicates a more profitable, growing, and financially safe firm.</p>
 <p>In the original paper, stocks are first divided into small and large cap groups and then sorted by quality. The resulting portfolios are value weighted and rebalanced monthly. The QMJ factor is long high quality stocks and short low quality, or junk, stocks within both size groups:</p>
@@ -584,14 +1126,14 @@ R_{SQ,t}+R_{BQ,t}
 \frac{1}{2}
 \left(
 R_{SJ,t}+R_{BJ,t}
-\right),
+\right)
 \]</span></p>
 <p>where <span class="math inline">\(S\)</span> and <span class="math inline">\(B\)</span> denote small and big stocks, while <span class="math inline">\(Q\)</span> and <span class="math inline">\(J\)</span> denote quality and junk stocks.</p>
 <p>For this project, the stock-level quality score is used directly as the rule-based alpha signal:</p>
 <p><span class="math display">\[
 s^{\mathrm{QMJ}}_{i,t}
 =
-Q_{i,t}.
+Q_{i,t}
 \]</span></p>
 <p>Stocks with higher QMJ scores are assigned higher expected-return rankings for subsequent portfolio construction.</p>
 </section>
@@ -636,7 +1178,7 @@ X_{i,t}
 <p>To reduce redundancy among the 153 JKP characteristics, feature selection was performed using observations from 2000–2009. A random sample of 350,000 stock-month observations was used, and missing values were replaced with the corresponding training-sample medians.</p>
 <p>The characteristics were grouped using complete-linkage hierarchical clustering. The distance between characteristics <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span> was defined as</p>
 <p><span class="math display">\[
-d_{jk}=1-\left|\rho_{jk}\right|,
+d_{jk}=1-\left|\rho_{jk}\right|
 \]</span></p>
 <p>where <span class="math inline">\(\rho_{jk}\)</span> is their Pearson correlation. Therefore, characteristics with strong positive or negative correlations were placed in the same cluster.</p>
 <p>The hierarchy was divided into 100 clusters, and the characteristic with the highest variance within each cluster was retained as its representative. This reduced the feature set from 153 to 100 characteristics.</p>
@@ -649,14 +1191,14 @@ d_{jk}=1-\left|\rho_{jk}\right|,
 <img src="index_files/figure-html/notebooks-01_feature_selection-fig-feature-selection-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-feature-selection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Information retained under hierarchical feature selection
+Figure&nbsp;7: Information retained under hierarchical feature selection
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<p>As shown in <a href="#fig-feature-selection" class="quarto-xref">Figure&nbsp;5</a>, retaining 100 features preserves an average <span class="math inline">\(R^2\)</span> of 0.9137, or approximately 91.4% of the information in the original feature set. Subsequent models are estimated using both the full 153-feature set and the selected 100-feature subset.</p>
+<p>As shown in <a href="#fig-feature-selection" class="quarto-xref">Figure&nbsp;7</a>, retaining 100 features preserves an average <span class="math inline">\(R^2\)</span> of 0.9137, or approximately 91.4% of the information in the original feature set. Subsequent models are estimated using both the full 153-feature set and the selected 100-feature subset.</p>
 </section>
 <section id="machine-learning-models" class="level3">
 <h3 class="anchored" data-anchor-id="machine-learning-models">Machine Learning Models</h3>
@@ -665,7 +1207,7 @@ Figure&nbsp;5: Information retained under hierarchical feature selection
 </section>
 <section id="cross-validation-and-hyperparameter-tuning" class="level3">
 <h3 class="anchored" data-anchor-id="cross-validation-and-hyperparameter-tuning">Cross Validation and Hyperparameter Tuning</h3>
-<p>An expanding-window time-series cross-validation procedure was used to preserve the chronological order of the data and prevent future information from entering the training sample. The five folds were constructed as follows:</p>
+<p>An expanding window time series cross validation procedure was used to preserve the chronological order of the data and prevent future information from entering the training sample. The five folds were constructed as follows:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -702,8 +1244,8 @@ Figure&nbsp;5: Information retained under hierarchical feature selection
 </tr>
 </tbody>
 </table>
-<p>A one-month gap was maintained between each training and validation window. Hyperparameter tuning was conducted separately for the full 153-feature set and the selected 100-feature subset. ROC-AUC was used as the primary model-selection criterion, while accuracy and log loss were also reported.</p>
-<p>A two-stage tuning procedure was applied. The first stage searched over a broad parameter range, while the second stage conducted a narrower search around the best-performing region.</p>
+<p>A one month gap was maintained between each training and validation window. Hyperparameter tuning was conducted separately for the full 153 features set and the selected 100 features subset. ROC AUC was used as the primary model selection criterion, while accuracy and log loss were also reported.</p>
+<p>A two stage tuning procedure was applied. The first stage searched over a broad parameter range, while the second stage conducted a narrower search around the best-performing region.</p>
 <ul>
 <li><p><code>Logistic Regression</code>: The first stage tested both <code>L1</code> and <code>L2</code> penalties with <code>C</code> values from 0.001 to 10. The refined stage focused on the <code>L1</code> penalty and smaller <code>C</code> values between 0.0001 and 0.003.</p></li>
 <li><p><code>Random Forest</code>: The first stage varied the <code>number of trees</code>, <code>maximum tree depth</code>, and <code>number of features</code> considered at each split. The refined stage focused on 300–500 trees, maximum depths of 15–20, and square-root feature sampling.</p></li>
@@ -784,7 +1326,7 @@ Figure&nbsp;5: Information retained under hierarchical feature selection
 </tbody>
 </table>
 <p>All models achieve ROC-AUC values above the random benchmark of 0.5, although their predictive performance remains modest. Random Forest using the selected 100 features produces the highest ROC-AUC of 0.5610, while XGBoost using the selected features achieves the highest accuracy and lowest log loss.</p>
-<p>The selected feature subset performs slightly better for both tree-based models, suggesting that clustering removes redundant information without reducing predictive power. In contrast, Logistic Regression performs slightly better using all 153 features. Because the objective is to rank stocks rather than make final binary trading decisions, ROC-AUC is used as the primary model-selection criterion. The economic value of these predictions is evaluated later through portfolio backtesting.</p>
+<p>The selected feature subset performs slightly better for both tree-based models, suggesting that clustering removes redundant information without reducing predictive power. In contrast, Logistic Regression performs slightly better using all 153 features. Because the objective is to rank stocks rather than make final binary trading decisions, ROC-AUC is used as the primary model selection criterion. The economic value of these predictions is evaluated later through portfolio backtesting.</p>
 </section>
 </section>
 </section>
@@ -802,9 +1344,9 @@ X F X^{\top}
 \]</span></p>
 <p>where:</p>
 <ul>
-<li><span class="math inline">\(\Omega\)</span> is the <span class="math inline">\(N \times N\)</span> stock-return covariance matrix;</li>
-<li><span class="math inline">\(X\)</span> is the <span class="math inline">\(N \times K\)</span> factor-exposure matrix;</li>
-<li><span class="math inline">\(F\)</span> is the <span class="math inline">\(K \times K\)</span> factor-return covariance matrix;</li>
+<li><span class="math inline">\(\Omega\)</span> is the <span class="math inline">\(N \times N\)</span> stock return covariance matrix;</li>
+<li><span class="math inline">\(X\)</span> is the <span class="math inline">\(N \times K\)</span> factor exposure matrix;</li>
+<li><span class="math inline">\(F\)</span> is the <span class="math inline">\(K \times K\)</span> factor return covariance matrix;</li>
 <li><span class="math inline">\(\Delta\)</span> is the idiosyncratic covariance matrix.</li>
 </ul>
 <p>The idiosyncratic covariance matrix is assumed to be diagonal, with each diagonal element representing the idiosyncratic variance of one stock. Under this structure, portfolio variance can be decomposed into systematic and idiosyncratic risk:</p>
@@ -848,7 +1390,7 @@ w^{\top}\Omega w
 \right\}
 \]</span></p>
 <p>where <span class="math inline">\(\alpha\)</span> is the vector of QMJ or machine-learning alpha scores, <span class="math inline">\(w\)</span> is the vector of portfolio weights, and <span class="math inline">\(\lambda\)</span> is the risk-aversion parameter.</p>
-<p>The first term rewards exposure to stocks with higher alpha scores, while the second term penalizes predicted portfolio risk. A larger value of <span class="math inline">\(\lambda\)</span> produces a more risk-controlled portfolio. The optimization is subject to the relevant budget, long-short exposure, and maximum-position constraints of each strategy.</p>
+<p>The first term rewards exposure to stocks with higher alpha scores, while the second term penalizes predicted portfolio risk. A larger value of <span class="math inline">\(\lambda\)</span> produces a more risk controlled portfolio. The optimization is subject to the relevant budget, long-short exposure, and maximum position constraints of each strategy.</p>
 </section>
 </section>
 <section id="backtest" class="level1">
@@ -868,7 +1410,7 @@ i:
 \hat{p}_{i,t}
 \geq
 Q_{0.90,t}
-\right\},
+\right\}
 \]</span></p>
 <p>where <span class="math inline">\(Q_{0.90,t}\)</span> is the 90th percentile of predicted probabilities in month <span class="math inline">\(t\)</span>. For each selected stock, the portfolio weight is:</p>
 <p><span class="math display">\[
@@ -896,7 +1438,7 @@ R_{t+1}
 \sum_i
 w_{i,t}r_{i,t+1}.
 \]</span></p>
-<p><a href="#fig-long-only-prob-weighted" class="quarto-xref">Figure&nbsp;6</a> and <a href="#tbl-long-only-performance" class="quarto-xref">Table&nbsp;1</a> show that the six model specifications produce relatively similar long-only performance. Logistic Subset achieves the strongest result, with an annualized return of 10.68%, a Sharpe ratio of 0.646, and a cumulative return of 73.26%. Overall, the long-only portfolios generate positive returns, but their risk-adjusted performance remains moderate.</p>
+<p><a href="#fig-long-only-prob-weighted" class="quarto-xref">Figure&nbsp;8</a> and <a href="#tbl-long-only-performance" class="quarto-xref">Table&nbsp;2</a> show that the six model specifications produce relatively similar long-only performance. Logistic Subset achieves the strongest result, with an annualized return of 10.68%, a Sharpe ratio of 0.646, and a cumulative return of 73.26%. Overall, the long-only portfolios generate positive returns, but their risk-adjusted performance remains moderate.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-only-prob-weighted">
 <div id="cell-fig-long-only-prob-weighted" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
@@ -906,7 +1448,7 @@ w_{i,t}r_{i,t+1}.
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-only-prob-weighted-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-only-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Growth of $1 for the 6 probability weighted long-only Top 10% portfolios.
+Figure&nbsp;8: Growth of $1 for the 6 probability weighted long-only Top 10% portfolios.
 </figcaption>
 </figure>
 </div>
@@ -918,7 +1460,7 @@ Figure&nbsp;6: Growth of $1 for the 6 probability weighted long-only Top 10% por
 <div id="tbl-long-only-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Performance metrics for the 6 probability weighted long-only Top 10% portfolios.
+Table&nbsp;2: Performance metrics for the 6 probability weighted long-only Top 10% portfolios.
 </figcaption>
 <div aria-describedby="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1013,7 +1555,7 @@ i:
 \hat{p}_{i,t}
 \geq
 Q_{0.95,t}
-\right\},
+\right\}
 \qquad
 \mathcal{S}_t^{5}
 =
@@ -1022,7 +1564,7 @@ i:
 \hat{p}_{i,t}
 \leq
 Q_{0.05,t}
-\right\}.
+\right\}
 \]</span></p>
 <p>Within the long leg, weights are proportional to <span class="math inline">\(\hat{p}_{i,t}\)</span>. Within the short leg, the confidence score is defined as <span class="math inline">\(1-\hat{p}_{i,t}\)</span>, so stocks with lower predicted probabilities receive larger absolute short weights:</p>
 <p><span class="math display">\[
@@ -1054,9 +1596,9 @@ i\in\mathcal{S}_t^{5}
 \]</span></p>
 <p>The portfolio allocates 50% gross exposure to each leg, resulting in zero net exposure and 100% total gross exposure:</p>
 <p><span class="math display">\[
-\sum_i w_{i,t}=0,
+\sum_i w_{i,t}=0
 \qquad
-\sum_i |w_{i,t}|=1.
+\sum_i |w_{i,t}|=1
 \]</span></p>
 <p>Its realized return is:</p>
 <p><span class="math display">\[
@@ -1070,10 +1612,10 @@ w_{i,t}r_{i,t+1}
 R_{t+1}^{\mathrm{Long}}
 -
 R_{t+1}^{\mathrm{Short}}
-\right),
+\right)
 \]</span></p>
 <p>where <span class="math inline">\(R_{t+1}^{\mathrm{Short}}\)</span> denotes the realized return of the stocks in the short basket before applying the negative portfolio exposure.</p>
-<p><a href="#fig-long-short-prob-weighted" class="quarto-xref">Figure&nbsp;7</a> and <a href="#tbl-long-short-performance" class="quarto-xref">Table&nbsp;2</a> show that the long-short portfolios substantially outperform their long-only counterparts, although they also experience deeper drawdowns. Random Forest Subset produces the highest annualized return of 31.53% and cumulative return of 441.39%, while XGBoost Full achieves the highest Sharpe ratio of 1.436. Random Forest Full records the smallest maximum drawdown among the six long-short portfolios at -31.42%.</p>
+<p><a href="#fig-long-short-prob-weighted" class="quarto-xref">Figure&nbsp;9</a> and <a href="#tbl-long-short-performance" class="quarto-xref">Table&nbsp;3</a> show that the long-short portfolios substantially outperform their long-only counterparts, although they also experience deeper drawdowns. Random Forest Subset produces the highest annualized return of 31.53% and cumulative return of 441.39%, while XGBoost Full achieves the highest Sharpe ratio of 1.436. Random Forest Full records the smallest maximum drawdown among the six long-short portfolios at -31.42%.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-short-prob-weighted">
 <div id="cell-fig-long-short-prob-weighted" class="cell" data-message="false">
 <div class="cell-output cell-output-display">
@@ -1083,7 +1625,7 @@ R_{t+1}^{\mathrm{Short}}
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-short-prob-weighted-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-short-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Growth of $1 for the 6 probability weighted long-short Top/Bottom 5% portfolios.
+Figure&nbsp;9: Growth of $1 for the 6 probability weighted long-short Top/Bottom 5% portfolios.
 </figcaption>
 </figure>
 </div>
@@ -1095,7 +1637,7 @@ Figure&nbsp;7: Growth of $1 for the 6 probability weighted long-short Top/Bottom
 <div id="tbl-long-short-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Performance metrics for the 6 probability weighted long-short Top/Bottom 5% portfolios.
+Table&nbsp;3: Performance metrics for the 6 probability weighted long-short Top/Bottom 5% portfolios.
 </figcaption>
 <div aria-describedby="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1209,7 +1751,7 @@ w^*
 <p>The risk model backtest is conducted using XGBoost Full and Random Forest Sub. QMJ serves as the primary long-short benchmark, while the S&amp;P 500 is included as a market performance reference. All return series cover the same evaluation period and are normalized to an initial value of 1.</p>
 <section id="random-forest-sub" class="level4">
 <h4 class="anchored" data-anchor-id="random-forest-sub">Random Forest Sub</h4>
-<p><a href="#fig-risk-rf-sub" class="quarto-xref">Figure&nbsp;8</a> and <a href="#tbl-risk-rf-sub" class="quarto-xref">Table&nbsp;3</a> show a clear trade off between return and risk. At <span class="math inline">\(\lambda=0\)</span>, the portfolio achieves the highest annualized return of 53.20% and Sharpe ratio of 1.609, but also exhibits 33.07% volatility and a maximum drawdown of -56.38%.</p>
+<p><a href="#fig-risk-rf-sub" class="quarto-xref">Figure&nbsp;10</a> and <a href="#tbl-risk-rf-sub" class="quarto-xref">Table&nbsp;4</a> show a clear trade off between return and risk. At <span class="math inline">\(\lambda=0\)</span>, the portfolio achieves the highest annualized return of 53.20% and Sharpe ratio of 1.609, but also exhibits 33.07% volatility and a maximum drawdown of -56.38%.</p>
 <p>As <span class="math inline">\(\lambda\)</span> increases to 1000, annualized volatility declines to 20.97% and maximum drawdown improves to -45.97%. However, annualized return also falls to 14.56% and the Sharpe ratio declines to 0.694. Among the risk-managed specifications, <span class="math inline">\(\lambda=300\)</span> provides a middle ground, producing a 28.19% annualized return and a Sharpe ratio of 1.116, although its drawdown remains substantially larger than that of the S&amp;P 500.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-rf-sub">
 <div id="cell-fig-risk-rf-sub" class="cell" data-message="false">
@@ -1220,7 +1762,7 @@ w^*
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-rf-sub-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Cumulative performance of the risk optimized Random Forest Sub long-short portfolios.
+Figure&nbsp;10: Cumulative performance of the risk optimized Random Forest Sub long-short portfolios.
 </figcaption>
 </figure>
 </div>
@@ -1232,7 +1774,7 @@ Figure&nbsp;8: Cumulative performance of the risk optimized Random Forest Sub lo
 <div id="tbl-risk-rf-sub" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Performance metrics for the Random Forest Sub portfolios and benchmarks.
+Table&nbsp;4: Performance metrics for the Random Forest Sub portfolios and benchmarks.
 </figcaption>
 <div aria-describedby="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1310,7 +1852,7 @@ Table&nbsp;3: Performance metrics for the Random Forest Sub portfolios and bench
 </section>
 <section id="xgboost-full" class="level4">
 <h4 class="anchored" data-anchor-id="xgboost-full">XGBoost Full</h4>
-<p><a href="#fig-risk-xgb-full" class="quarto-xref">Figure&nbsp;9</a> and <a href="#tbl-risk-xgb-full" class="quarto-xref">Table&nbsp;4</a> indicate stronger overall performance for the XGBoost Full signal. The <span class="math inline">\(\lambda=0\)</span> portfolio generates the highest annualized return of 74.12% and Sharpe ratio of 2.163, accompanied by 34.27% volatility and a maximum drawdown of -49.86%.</p>
+<p><a href="#fig-risk-xgb-full" class="quarto-xref">Figure&nbsp;11</a> and <a href="#tbl-risk-xgb-full" class="quarto-xref">Table&nbsp;5</a> indicate stronger overall performance for the XGBoost Full signal. The <span class="math inline">\(\lambda=0\)</span> portfolio generates the highest annualized return of 74.12% and Sharpe ratio of 2.163, accompanied by 34.27% volatility and a maximum drawdown of -49.86%.</p>
 <p>At <span class="math inline">\(\lambda=300\)</span>, annualized volatility falls to 23.81%, while the portfolio retains an annualized return of 32.97% and a Sharpe ratio of 1.385. By contrast, the <span class="math inline">\(\lambda=1000\)</span> portfolio produces performance close to the S&amp;P 500, suggesting that a very large risk penalty removes much of the return advantage provided by the alpha signal.</p>
 <div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-xgb-full">
 <div id="cell-fig-risk-xgb-full" class="cell" data-message="false">
@@ -1321,7 +1863,7 @@ Table&nbsp;3: Performance metrics for the Random Forest Sub portfolios and bench
 <img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-xgb-full-output-1.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: Cumulative performance of the risk-optimized XGBoost Full long-short portfolios.
+Figure&nbsp;11: Cumulative performance of the risk-optimized XGBoost Full long-short portfolios.
 </figcaption>
 </figure>
 </div>
@@ -1333,7 +1875,7 @@ Figure&nbsp;9: Cumulative performance of the risk-optimized XGBoost Full long-sh
 <div id="tbl-risk-xgb-full" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: Performance metrics for the XGBoost Full portfolios and benchmarks.
+Table&nbsp;5: Performance metrics for the XGBoost Full portfolios and benchmarks.
 </figcaption>
 <div aria-describedby="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -1417,13 +1959,13 @@ Table&nbsp;4: Performance metrics for the XGBoost Full portfolios and benchmarks
 <h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-AsnessFrazziniPedersen2019" class="csl-entry" role="listitem">
-Asness, Clifford S., Andrea Frazzini, and Lasse Heje Pedersen. 2019. <span>“Quality Minus Junk.”</span> <em>Review of Accounting Studies</em> 24 (1): 34–112. <a href="https://doi.org/10.1007/s11142-018-9470-2">https://doi.org/10.1007/s11142-018-9470-2</a>.
+Asness, Clifford S., Andrea Frazzini, and Lasse Heje Pedersen. 2019. <span>“Quality Minus Junk.”</span> <em>Review of Accounting Studies</em> 24: 34–112.
 </div>
 <div id="ref-CahanJi2016" class="csl-entry" role="listitem">
-Cahan, Ercument, and Lei Ji. 2016. <span>“Global Equity Fundamental Factor Model.”</span> Portfolio and Risk Analytics White Paper. Bloomberg L.P.
+Cahan, Ercument, and Lei Ji. 2016. <span>“Global Equity Fundamental Factor Model.”</span> Bloomberg L.P.
 </div>
 <div id="ref-JensenKellyPedersen2023" class="csl-entry" role="listitem">
-Jensen, Theis Ingerslev, Bryan T. Kelly, and Lasse Heje Pedersen. 2023. <span>“Is There a Replication Crisis in Finance?”</span> <em>The Journal of Finance</em> 78 (5): 2465–2518. <a href="https://doi.org/10.1111/jofi.13249">https://doi.org/10.1111/jofi.13249</a>.
+Jensen, Theis Ingerslev, Bryan T. Kelly, and Lasse Heje Pedersen. 2023. <span>“Is There a Replication Crisis in Finance?”</span> <em>The Journal of Finance</em> 78: 2465–2518.
 </div>
 </div>
 </section>
