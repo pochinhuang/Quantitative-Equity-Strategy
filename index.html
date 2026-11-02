@@ -152,21 +152,28 @@ window.Quarto = {
   </ul></li>
   <li><a href="#risk-model" id="toc-risk-model" class="nav-link" data-scroll-target="#risk-model">Risk Model</a>
   <ul class="collapse">
-  <li><a href="#factor-risk-model" id="toc-factor-risk-model" class="nav-link" data-scroll-target="#factor-risk-model">Factor Risk Model</a></li>
+  <li><a href="#risk-model-specification" id="toc-risk-model-specification" class="nav-link" data-scroll-target="#risk-model-specification">Risk Model Specification</a></li>
   <li><a href="#factor-covariance-matrix" id="toc-factor-covariance-matrix" class="nav-link" data-scroll-target="#factor-covariance-matrix">Factor Covariance Matrix</a></li>
-  <li><a href="#portfolio-optimization" id="toc-portfolio-optimization" class="nav-link" data-scroll-target="#portfolio-optimization">Portfolio Optimization</a></li>
+  <li><a href="#specific-risk" id="toc-specific-risk" class="nav-link" data-scroll-target="#specific-risk">Specific Risk</a></li>
   </ul></li>
   <li><a href="#backtest" id="toc-backtest" class="nav-link" data-scroll-target="#backtest">Backtest</a>
   <ul class="collapse">
-  <li><a href="#probability-weighted-portfolios" id="toc-probability-weighted-portfolios" class="nav-link" data-scroll-target="#probability-weighted-portfolios">Probability Weighted Portfolios</a>
+  <li><a href="#portfolio-construction" id="toc-portfolio-construction" class="nav-link" data-scroll-target="#portfolio-construction">Portfolio Construction</a>
   <ul class="collapse">
-  <li><a href="#long-only-top-10" id="toc-long-only-top-10" class="nav-link" data-scroll-target="#long-only-top-10">Long-Only: Top 10%</a></li>
-  <li><a href="#long-short-topbottom-5" id="toc-long-short-topbottom-5" class="nav-link" data-scroll-target="#long-short-topbottom-5">Long-Short: Top/Bottom 5%</a></li>
+  <li><a href="#portfolio-optimization" id="toc-portfolio-optimization" class="nav-link" data-scroll-target="#portfolio-optimization">Portfolio Optimization</a></li>
+  <li><a href="#benchmark" id="toc-benchmark" class="nav-link" data-scroll-target="#benchmark">Benchmark</a></li>
+  <li><a href="#portfolio-constraints" id="toc-portfolio-constraints" class="nav-link" data-scroll-target="#portfolio-constraints">Portfolio Constraints</a></li>
   </ul></li>
-  <li><a href="#risk-optimized-portfolios" id="toc-risk-optimized-portfolios" class="nav-link" data-scroll-target="#risk-optimized-portfolios">Risk Optimized Portfolios</a>
+  <li><a href="#parameter-sensitivity" id="toc-parameter-sensitivity" class="nav-link" data-scroll-target="#parameter-sensitivity">Parameter Sensitivity</a></li>
+  <li><a href="#main-backtest-results" id="toc-main-backtest-results" class="nav-link" data-scroll-target="#main-backtest-results">Main Backtest Results</a>
   <ul class="collapse">
-  <li><a href="#optimization-and-backtest-setup" id="toc-optimization-and-backtest-setup" class="nav-link" data-scroll-target="#optimization-and-backtest-setup">Optimization and Backtest Setup</a></li>
-  <li><a href="#backtest-results" id="toc-backtest-results" class="nav-link" data-scroll-target="#backtest-results">Backtest Results</a></li>
+  <li><a href="#performance-summary" id="toc-performance-summary" class="nav-link" data-scroll-target="#performance-summary">Performance Summary</a></li>
+  <li><a href="#cumulative-performance" id="toc-cumulative-performance" class="nav-link" data-scroll-target="#cumulative-performance">Cumulative Performance</a></li>
+  </ul></li>
+  <li><a href="#robustness-checks" id="toc-robustness-checks" class="nav-link" data-scroll-target="#robustness-checks">Robustness Checks</a>
+  <ul class="collapse">
+  <li><a href="#position-limit-robustness" id="toc-position-limit-robustness" class="nav-link" data-scroll-target="#position-limit-robustness">Position Limit Robustness</a></li>
+  <li><a href="#active-portfolio-characteristics" id="toc-active-portfolio-characteristics" class="nav-link" data-scroll-target="#active-portfolio-characteristics">Active Portfolio Characteristics</a></li>
   </ul></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -1332,514 +1339,331 @@ Figure&nbsp;7: Information retained under hierarchical feature selection
 </section>
 <section id="risk-model" class="level1">
 <h1>Risk Model</h1>
-<section id="factor-risk-model" class="level2">
-<h2 class="anchored" data-anchor-id="factor-risk-model">Factor Risk Model</h2>
-<p>Following the Bloomberg Global Equity Fundamental Factor Model, stock returns are decomposed into systematic factor returns and idiosyncratic returns. The covariance matrix of stock returns is estimated as</p>
+<p>A risk model is used to estimate the covariance structure of individual stock returns. The model separates stock return risk into systematic factor risk and specific risk. This allows the portfolio optimization process to control unintended factor exposures while still allowing active stock selection.</p>
+<section id="risk-model-specification" class="level2">
+<h2 class="anchored" data-anchor-id="risk-model-specification">Risk Model Specification</h2>
+<p>Stock returns are modeled as</p>
 <p><span class="math display">\[
-\Omega
-=
-X F X^{\top}
-+
-\Delta
+r = Xf + \epsilon
+\]</span></p>
+<p>where <span class="math inline">\(X\)</span> represents stock exposures to systematic risk factors, <span class="math inline">\(f\)</span> represents factor returns, and <span class="math inline">\(\epsilon\)</span> represents residual returns that are not explained by the factors.</p>
+<p>The stock return covariance matrix is expressed as</p>
+<p><span class="math display">\[
+\Omega = X F X^{\top} + \Delta
 \]</span></p>
 <p>where:</p>
 <ul>
 <li><span class="math inline">\(\Omega\)</span> is the <span class="math inline">\(N \times N\)</span> stock return covariance matrix;</li>
 <li><span class="math inline">\(X\)</span> is the <span class="math inline">\(N \times K\)</span> factor exposure matrix;</li>
 <li><span class="math inline">\(F\)</span> is the <span class="math inline">\(K \times K\)</span> factor return covariance matrix;</li>
-<li><span class="math inline">\(\Delta\)</span> is the idiosyncratic covariance matrix.</li>
+<li><span class="math inline">\(\Delta\)</span> is the <span class="math inline">\(N \times N\)</span> specific risk covariance matrix.</li>
 </ul>
-<p>The idiosyncratic covariance matrix is assumed to be diagonal, with each diagonal element representing the idiosyncratic variance of one stock. Under this structure, portfolio variance can be decomposed into systematic and idiosyncratic risk:</p>
-<p><span class="math display">\[
-w^{\top}\Omega w
-=
-w^{\top}X F X^{\top}w
-+
-w^{\top}\Delta w
-\]</span></p>
+<p>The model includes the market factor together with ten style factors: momentum, value, dividend yield, size, trading activity, earnings variability, profitability, volatility, growth, and leverage.</p>
+<p>Monthly factor returns are estimated using cross-sectional weighted least squares, with greater weight assigned to larger firms. Exposures observed at month <span class="math inline">\(t\)</span> are used to explain stock returns realized in month <span class="math inline">\(t+1\)</span>, which avoids the use of future information.</p>
 </section>
 <section id="factor-covariance-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="factor-covariance-matrix">Factor Covariance Matrix</h2>
 <p>The factor covariance matrix is decomposed into factor volatilities and factor correlations:</p>
 <p><span class="math display">\[
-F
-=
-V C V
+F = VCV
 \]</span></p>
-<p>where <span class="math inline">\(V\)</span> is a diagonal matrix of factor volatilities and <span class="math inline">\(C\)</span> is the factor correlation matrix. Following Bloomberg factor volatilities are estimated using an exponentially weighted moving average with a 26 week half-life.</p>
-<p>The factor correlation matrix combines an exponentially weighted historical correlation matrix with a PCA correlation matrix:</p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(V\)</span> is a diagonal matrix containing factor volatilities;</li>
+<li><span class="math inline">\(C\)</span> is the factor correlation matrix.</li>
+</ul>
+<p>Factor volatilities are estimated using an exponentially weighted moving average with a six-month half-life.</p>
+<p>The factor correlation matrix combines an exponentially weighted historical correlation matrix with a correlation matrix constructed using principal component analysis:</p>
 <p><span class="math display">\[
-C
-=
-0.8C_{0}
-+
-0.2C_{P}
+C = 0.8C_0 + 0.2C_P
 \]</span></p>
-<p>where <span class="math inline">\(C_{0}\)</span> is estimated using an exponentially weighted moving average with a 12 month half-life, while <span class="math inline">\(C_{P}\)</span> is constructed from the principal components associated with the largest eigenvalues. This combination retains economically meaningful historical relationships while reducing estimation noise.</p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(C_0\)</span> is the historical factor correlation matrix estimated using a 12-month EWMA half-life;</li>
+<li><span class="math inline">\(C_P\)</span> is the correlation matrix constructed using principal component analysis to provide a more stable estimate of common factor dependence.</li>
+</ul>
+<p>The resulting factor covariance matrix captures changes in both factor volatility and correlation over time.</p>
 </section>
-<section id="portfolio-optimization" class="level2">
-<h2 class="anchored" data-anchor-id="portfolio-optimization">Portfolio Optimization</h2>
-<p>At the end of each month, the alpha signal and estimated covariance matrix are used to determine portfolio weights. The optimization problem is</p>
+<section id="specific-risk" class="level2">
+<h2 class="anchored" data-anchor-id="specific-risk">Specific Risk</h2>
+<p>Specific risk represents the portion of an individual stock’s return variation that is not explained by the systematic factors.</p>
+<p>For each stock, the residual return is</p>
 <p><span class="math display">\[
-\max_{w}
-\left\{
-\alpha^{\top}w
--
-\frac{\lambda}{2}
-w^{\top}\Omega w
-\right\}
+\epsilon_{i,t} = r_{i,t} - X_{i,t-1}f_t
 \]</span></p>
-<p>where <span class="math inline">\(\alpha\)</span> is the vector of QMJ or machine-learning alpha scores, <span class="math inline">\(w\)</span> is the vector of portfolio weights, and <span class="math inline">\(\lambda\)</span> is the risk-aversion parameter.</p>
-<p>The first term rewards exposure to stocks with higher alpha scores, while the second term penalizes predicted portfolio risk. A larger value of <span class="math inline">\(\lambda\)</span> produces a more risk controlled portfolio. The optimization is subject to the relevant budget, long-short exposure, and maximum position constraints of each strategy.</p>
+<p>The specific variance for each stock is estimated from historical squared residuals using an exponentially weighted moving average with a six-month half-life:</p>
+<p><span class="math display">\[
+\sigma_{\epsilon,i,t}^{2} = \operatorname{EWMA}\left(\epsilon_{i,t}^{2}\right)
+\]</span></p>
+<p>The specific risk covariance matrix is assumed to be diagonal:</p>
+<p><span class="math display">\[
+\Delta = \operatorname{diag}\left(\sigma_{\epsilon,1}^{2},\sigma_{\epsilon,2}^{2},\ldots,\sigma_{\epsilon,N}^{2}\right)
+\]</span></p>
+<p>This assumes that residual risks are specific to individual stocks, while covariance across stocks is captured through the common factor component <span class="math inline">\(XFX^{\top}\)</span>.</p>
 </section>
 </section>
 <section id="backtest" class="level1">
 <h1>Backtest</h1>
-<section id="probability-weighted-portfolios" class="level2">
-<h2 class="anchored" data-anchor-id="probability-weighted-portfolios">Probability Weighted Portfolios</h2>
-<p>At the end of each month <span class="math inline">\(t\)</span>, stocks are ranked by the predicted probability <span class="math inline">\(\hat{p}_{i,t}\)</span> that stock <span class="math inline">\(i\)</span> will earn a positive excess return in month <span class="math inline">\(t+1\)</span>. Probability weighting uses both the ranking and magnitude of these predictions, assigning larger weights to stocks associated with stronger model confidence.</p>
-<p>These portfolios do not use a covariance matrix or risk penalty. They therefore serve as a baseline for evaluating the economic value of the machine learning signals before incorporating the factor risk model.</p>
-<section id="long-only-top-10" class="level3">
-<h3 class="anchored" data-anchor-id="long-only-top-10">Long-Only: Top 10%</h3>
-<p>The long-only strategy selects the 10% of stocks with the highest predicted probabilities. Let <span class="math inline">\(\mathcal{L}_t^{10}\)</span> denote this set:</p>
+<section id="portfolio-construction" class="level2">
+<h2 class="anchored" data-anchor-id="portfolio-construction">Portfolio Construction</h2>
+<p>The predicted signals from the alpha models are converted into portfolio weights through an optimization framework. At each month, stocks are ranked according to their predicted signals, and the top 10% are selected for portfolio construction.</p>
+<p>The portfolio is constructed relative to the S&amp;P 500 benchmark and uses the covariance estimates from the risk model to control both factor risk and specific risk. The objective is to increase exposure to stocks with stronger predicted signals while limiting the amount of active risk taken relative to the benchmark.</p>
+<section id="portfolio-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="portfolio-optimization">Portfolio Optimization</h3>
+<p>Let <span class="math inline">\(w\)</span> denote the vector of portfolio weights and <span class="math inline">\(b\)</span> denote the S&amp;P 500 benchmark weights. The active portfolio weights are defined as</p>
 <p><span class="math display">\[
-\mathcal{L}_t^{10}
-=
-\left\{
-i:
-\hat{p}_{i,t}
-\geq
-Q_{0.90,t}
-\right\}
+a = w-b
 \]</span></p>
-<p>where <span class="math inline">\(Q_{0.90,t}\)</span> is the 90th percentile of predicted probabilities in month <span class="math inline">\(t\)</span>. For each selected stock, the portfolio weight is:</p>
+<p>The portfolio is obtained by solving</p>
 <p><span class="math display">\[
-w_{i,t}
-=
-\frac{
-\hat{p}_{i,t}
-}{
-\sum_{j\in\mathcal{L}_t^{10}}
-\hat{p}_{j,t}
-},
-\qquad
-i\in\mathcal{L}_t^{10}.
-\]</span></p>
-<p>The portfolio is fully invested and long-only:</p>
-<p><span class="math display">\[
-\sum_i w_{i,t}=1,
-\qquad
-w_{i,t}\geq 0.
-\]</span></p>
-<p>The portfolio formed at the end of month <span class="math inline">\(t\)</span> is evaluated using realized excess returns in month <span class="math inline">\(t+1\)</span>:</p>
-<p><span class="math display">\[
-R_{t+1}
-=
-\sum_i
-w_{i,t}r_{i,t+1}.
-\]</span></p>
-<p><a href="#fig-long-only-prob-weighted" class="quarto-xref">Figure&nbsp;8</a> and <a href="#tbl-long-only-performance" class="quarto-xref">Table&nbsp;2</a> show that the six model specifications produce relatively similar long-only performance. Logistic Subset achieves the strongest result, with an annualized return of 10.68%, a Sharpe ratio of 0.646, and a cumulative return of 73.26%. Overall, the long-only portfolios generate positive returns, but their risk-adjusted performance remains moderate.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-only-prob-weighted">
-<div id="cell-fig-long-only-prob-weighted" class="cell" data-message="false">
-<div class="cell-output cell-output-display">
-<div id="fig-long-only-prob-weighted" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-long-only-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-only-prob-weighted-output-1.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-only-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Growth of $1 for the 6 probability weighted long-only Top 10% portfolios.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-</div>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-long-only-performance">
-<div class="cell" data-message="false">
-<div id="tbl-long-only-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Performance metrics for the 6 probability weighted long-only Top 10% portfolios.
-</figcaption>
-<div aria-describedby="tbl-long-only-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display">
-<style type="text/css">
-</style>
-
-<table id="T_cd26a" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<thead>
-<tr class="header">
-<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th id="T_cd26a_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Annualized Return</th>
-<th id="T_cd26a_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Annualized Volatility</th>
-<th id="T_cd26a_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Annualized Sharpe</th>
-<th id="T_cd26a_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Cumulative Return</th>
-<th id="T_cd26a_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Max Drawdown</th>
-</tr>
-<tr class="odd">
-<th class="index_name level0" data-quarto-table-cell-role="th">Strategy</th>
-<th class="blank col0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col1" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col2" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col3" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col4" data-quarto-table-cell-role="th">&nbsp;</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td id="T_cd26a_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">Logistic Subset</td>
-<td id="T_cd26a_row0_col0" class="data row0 col0">10.68%</td>
-<td id="T_cd26a_row0_col1" class="data row0 col1">16.53%</td>
-<td id="T_cd26a_row0_col2" class="data row0 col2">0.646</td>
-<td id="T_cd26a_row0_col3" class="data row0 col3">73.26%</td>
-<td id="T_cd26a_row0_col4" class="data row0 col4">-22.62%</td>
-</tr>
-<tr class="even">
-<td id="T_cd26a_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">Random Forest Full</td>
-<td id="T_cd26a_row1_col0" class="data row1 col0">9.82%</td>
-<td id="T_cd26a_row1_col1" class="data row1 col1">16.63%</td>
-<td id="T_cd26a_row1_col2" class="data row1 col2">0.591</td>
-<td id="T_cd26a_row1_col3" class="data row1 col3">64.41%</td>
-<td id="T_cd26a_row1_col4" class="data row1 col4">-26.95%</td>
-</tr>
-<tr class="odd">
-<td id="T_cd26a_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">Logistic Full</td>
-<td id="T_cd26a_row2_col0" class="data row2 col0">9.13%</td>
-<td id="T_cd26a_row2_col1" class="data row2 col1">17.06%</td>
-<td id="T_cd26a_row2_col2" class="data row2 col2">0.535</td>
-<td id="T_cd26a_row2_col3" class="data row2 col3">57.33%</td>
-<td id="T_cd26a_row2_col4" class="data row2 col4">-22.71%</td>
-</tr>
-<tr class="even">
-<td id="T_cd26a_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">XGBoost Full</td>
-<td id="T_cd26a_row3_col0" class="data row3 col0">9.19%</td>
-<td id="T_cd26a_row3_col1" class="data row3 col1">17.49%</td>
-<td id="T_cd26a_row3_col2" class="data row3 col2">0.525</td>
-<td id="T_cd26a_row3_col3" class="data row3 col3">56.88%</td>
-<td id="T_cd26a_row3_col4" class="data row3 col4">-29.66%</td>
-</tr>
-<tr class="odd">
-<td id="T_cd26a_level0_row4" class="row_heading level0 row4" data-quarto-table-cell-role="th">XGBoost Subset</td>
-<td id="T_cd26a_row4_col0" class="data row4 col0">8.68%</td>
-<td id="T_cd26a_row4_col1" class="data row4 col1">16.90%</td>
-<td id="T_cd26a_row4_col2" class="data row4 col2">0.514</td>
-<td id="T_cd26a_row4_col3" class="data row4 col3">53.03%</td>
-<td id="T_cd26a_row4_col4" class="data row4 col4">-29.78%</td>
-</tr>
-<tr class="even">
-<td id="T_cd26a_level0_row5" class="row_heading level0 row5" data-quarto-table-cell-role="th">Random Forest Subset</td>
-<td id="T_cd26a_row5_col0" class="data row5 col0">8.31%</td>
-<td id="T_cd26a_row5_col1" class="data row5 col1">15.63%</td>
-<td id="T_cd26a_row5_col2" class="data row5 col2">0.532</td>
-<td id="T_cd26a_row5_col3" class="data row5 col3">51.82%</td>
-<td id="T_cd26a_row5_col4" class="data row5 col4">-26.45%</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="long-short-topbottom-5" class="level3">
-<h3 class="anchored" data-anchor-id="long-short-topbottom-5">Long-Short: Top/Bottom 5%</h3>
-<p>The long-short strategy buys the 5% of stocks with the highest predicted probabilities and shorts the 5% with the lowest predicted probabilities. The two sets are defined as:</p>
-<p><span class="math display">\[
-\mathcal{L}_t^{5}
-=
-\left\{
-i:
-\hat{p}_{i,t}
-\geq
-Q_{0.95,t}
-\right\}
-\qquad
-\mathcal{S}_t^{5}
-=
-\left\{
-i:
-\hat{p}_{i,t}
-\leq
-Q_{0.05,t}
-\right\}
-\]</span></p>
-<p>Within the long leg, weights are proportional to <span class="math inline">\(\hat{p}_{i,t}\)</span>. Within the short leg, the confidence score is defined as <span class="math inline">\(1-\hat{p}_{i,t}\)</span>, so stocks with lower predicted probabilities receive larger absolute short weights:</p>
-<p><span class="math display">\[
-w_{i,t}
-=
-\begin{cases}
-\displaystyle
-0.5
-\frac{
-\hat{p}_{i,t}
-}{
-\sum_{j\in\mathcal{L}_t^{5}}
-\hat{p}_{j,t}
-},
-&amp;
-i\in\mathcal{L}_t^{5}
-\\[14pt]
-\displaystyle
--0.5
-\frac{
-1-\hat{p}_{i,t}
-}{
-\sum_{j\in\mathcal{S}_t^{5}}
-(1-\hat{p}_{j,t})
-},
-&amp;
-i\in\mathcal{S}_t^{5}
-\end{cases}
-\]</span></p>
-<p>The portfolio allocates 50% gross exposure to each leg, resulting in zero net exposure and 100% total gross exposure:</p>
-<p><span class="math display">\[
-\sum_i w_{i,t}=0
-\qquad
-\sum_i |w_{i,t}|=1
-\]</span></p>
-<p>Its realized return is:</p>
-<p><span class="math display">\[
-R_{t+1}
-=
-\sum_i
-w_{i,t}r_{i,t+1}
-=
-0.5
+\max_w
+\left[
+\alpha^{\top}w
+-
+\frac{1}{2}
 \left(
-R_{t+1}^{\mathrm{Long}}
--
-R_{t+1}^{\mathrm{Short}}
+\lambda_F
+(w-b)^{\top}XFX^{\top}(w-b)
++
+\lambda_S
+(w-b)^{\top}\Delta(w-b)
 \right)
+\right]
 \]</span></p>
-<p>where <span class="math inline">\(R_{t+1}^{\mathrm{Short}}\)</span> denotes the realized return of the stocks in the short basket before applying the negative portfolio exposure.</p>
-<p><a href="#fig-long-short-prob-weighted" class="quarto-xref">Figure&nbsp;9</a> and <a href="#tbl-long-short-performance" class="quarto-xref">Table&nbsp;3</a> show that the long-short portfolios substantially outperform their long-only counterparts, although they also experience deeper drawdowns. Random Forest Subset produces the highest annualized return of 31.53% and cumulative return of 441.39%, while XGBoost Full achieves the highest Sharpe ratio of 1.436. Random Forest Full records the smallest maximum drawdown among the six long-short portfolios at -31.42%.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-long-short-prob-weighted">
-<div id="cell-fig-long-short-prob-weighted" class="cell" data-message="false">
-<div class="cell-output cell-output-display">
-<div id="fig-long-short-prob-weighted" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-long-short-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-04_backtest_02-fig-long-short-prob-weighted-output-1.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-long-short-prob-weighted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: Growth of $1 for the 6 probability weighted long-short Top/Bottom 5% portfolios.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-</div>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-long-short-performance">
-<div class="cell" data-message="false">
-<div id="tbl-long-short-performance" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Performance metrics for the 6 probability weighted long-short Top/Bottom 5% portfolios.
-</figcaption>
-<div aria-describedby="tbl-long-short-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display">
-<style type="text/css">
-</style>
-
-<table id="T_bdb23" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<thead>
-<tr class="header">
-<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th id="T_bdb23_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Annualized Return</th>
-<th id="T_bdb23_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Annualized Volatility</th>
-<th id="T_bdb23_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Annualized Sharpe</th>
-<th id="T_bdb23_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Cumulative Return</th>
-<th id="T_bdb23_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Max Drawdown</th>
-</tr>
-<tr class="odd">
-<th class="index_name level0" data-quarto-table-cell-role="th">Strategy</th>
-<th class="blank col0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col1" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col2" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col3" data-quarto-table-cell-role="th">&nbsp;</th>
-<th class="blank col4" data-quarto-table-cell-role="th">&nbsp;</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td id="T_bdb23_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">Random Forest Subset</td>
-<td id="T_bdb23_row0_col0" class="data row0 col0">31.53%</td>
-<td id="T_bdb23_row0_col1" class="data row0 col1">22.80%</td>
-<td id="T_bdb23_row0_col2" class="data row0 col2">1.383</td>
-<td id="T_bdb23_row0_col3" class="data row0 col3">441.39%</td>
-<td id="T_bdb23_row0_col4" class="data row0 col4">-41.86%</td>
-</tr>
-<tr class="even">
-<td id="T_bdb23_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">XGBoost Full</td>
-<td id="T_bdb23_row1_col0" class="data row1 col0">31.23%</td>
-<td id="T_bdb23_row1_col1" class="data row1 col1">21.75%</td>
-<td id="T_bdb23_row1_col2" class="data row1 col2">1.436</td>
-<td id="T_bdb23_row1_col3" class="data row1 col3">439.00%</td>
-<td id="T_bdb23_row1_col4" class="data row1 col4">-38.74%</td>
-</tr>
-<tr class="odd">
-<td id="T_bdb23_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">XGBoost Subset</td>
-<td id="T_bdb23_row2_col0" class="data row2 col0">30.72%</td>
-<td id="T_bdb23_row2_col1" class="data row2 col1">23.12%</td>
-<td id="T_bdb23_row2_col2" class="data row2 col2">1.329</td>
-<td id="T_bdb23_row2_col3" class="data row2 col3">414.18%</td>
-<td id="T_bdb23_row2_col4" class="data row2 col4">-41.64%</td>
-</tr>
-<tr class="even">
-<td id="T_bdb23_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">Random Forest Full</td>
-<td id="T_bdb23_row3_col0" class="data row3 col0">29.62%</td>
-<td id="T_bdb23_row3_col1" class="data row3 col1">20.79%</td>
-<td id="T_bdb23_row3_col2" class="data row3 col2">1.425</td>
-<td id="T_bdb23_row3_col3" class="data row3 col3">398.28%</td>
-<td id="T_bdb23_row3_col4" class="data row3 col4">-31.42%</td>
-</tr>
-<tr class="odd">
-<td id="T_bdb23_level0_row4" class="row_heading level0 row4" data-quarto-table-cell-role="th">Logistic Full</td>
-<td id="T_bdb23_row4_col0" class="data row4 col0">27.89%</td>
-<td id="T_bdb23_row4_col1" class="data row4 col1">22.15%</td>
-<td id="T_bdb23_row4_col2" class="data row4 col2">1.259</td>
-<td id="T_bdb23_row4_col3" class="data row4 col3">342.59%</td>
-<td id="T_bdb23_row4_col4" class="data row4 col4">-45.95%</td>
-</tr>
-<tr class="even">
-<td id="T_bdb23_level0_row5" class="row_heading level0 row5" data-quarto-table-cell-role="th">Logistic Subset</td>
-<td id="T_bdb23_row5_col0" class="data row5 col0">25.89%</td>
-<td id="T_bdb23_row5_col1" class="data row5 col1">24.49%</td>
-<td id="T_bdb23_row5_col2" class="data row5 col2">1.057</td>
-<td id="T_bdb23_row5_col3" class="data row5 col3">278.28%</td>
-<td id="T_bdb23_row5_col4" class="data row5 col4">-50.02%</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</figure>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="risk-optimized-portfolios" class="level2">
-<h2 class="anchored" data-anchor-id="risk-optimized-portfolios">Risk Optimized Portfolios</h2>
-<p>The probability weighted portfolios use only the machine learning predictions to determine portfolio weights. This section incorporates a factor risk model so that portfolio construction considers both predicted alpha and portfolio risk.</p>
-<section id="optimization-and-backtest-setup" class="level3">
-<h3 class="anchored" data-anchor-id="optimization-and-backtest-setup">Optimization and Backtest Setup</h3>
-<p>The predicted probabilities from each machine learning model are treated as cross sectional alpha scores. Portfolio weights are obtained by solving:</p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span> is the vector of predicted alpha signals;</li>
+<li><span class="math inline">\(w\)</span> is the vector of portfolio weights;</li>
+<li><span class="math inline">\(b\)</span> is the vector of S&amp;P 500 benchmark weights;</li>
+<li><span class="math inline">\(XFX^{\top}\)</span> represents the covariance associated with systematic factors;</li>
+<li><span class="math inline">\(\Delta\)</span> represents the covariance associated with specific risk;</li>
+<li><span class="math inline">\(\lambda_F\)</span> controls the penalty on active factor risk;</li>
+<li><span class="math inline">\(\lambda_S\)</span> controls the penalty on active specific risk.</li>
+</ul>
+<p>The first term,</p>
 <p><span class="math display">\[
-w^*
-=
-\underset{w}{\operatorname{arg\,max}}
-\left\{
-\alpha^\top w
--
-\frac{\lambda}{2}w^\top\Omega w
-\right\}
+\alpha^{\top}w
 \]</span></p>
-<p>The first term rewards exposure to stronger alpha signals, while the second penalizes predicted portfolio variance. The optimization is evaluated using:</p>
+<p>rewards allocation to stocks with stronger predicted signals. The remaining terms penalize deviations from the benchmark according to the factor and specific risk estimates from the risk model.</p>
+</section>
+<section id="benchmark" class="level3">
+<h3 class="anchored" data-anchor-id="benchmark">Benchmark</h3>
+<p>The S&amp;P 500 is used as the benchmark. Monthly benchmark weights are obtained from the market capitalization of the index constituents.</p>
+<p>The benchmark return is calculated as</p>
 <p><span class="math display">\[
-\lambda \in \{0,100,300,1000\}
+R_{b,t+1} = \sum_{i=1}^{N}b_{i,t}R_{i,t+1}
 \]</span></p>
-<p>When <span class="math inline">\(\lambda=0\)</span>, portfolio construction depends only on the alpha signal and portfolio constraints. Larger values of <span class="math inline">\(\lambda\)</span> place greater emphasis on risk control.</p>
-<p>For the long-short strategy, the top and bottom 5% of stocks ranked by predicted probability form the long and short candidate sets. Each stock is subject to a maximum absolute weight of 1%.</p>
-<p>At the end of month <span class="math inline">\(t\)</span>, alpha forecasts, risk estimates, and portfolio weights are calculated using only information available at that time. Performance is then evaluated using realized returns in month <span class="math inline">\(t+1\)</span>.</p>
+<p>where <span class="math inline">\(b_{i,t}\)</span> is the benchmark weight of stock <span class="math inline">\(i\)</span> at month <span class="math inline">\(t\)</span> and <span class="math inline">\(R_{i,t+1}\)</span> is its return in the following month.</p>
+<p>For comparisons using excess returns, the monthly risk free rate is subtracted from the benchmark return.</p>
 </section>
-<section id="backtest-results" class="level3">
-<h3 class="anchored" data-anchor-id="backtest-results">Backtest Results</h3>
-<p>The risk model backtest is conducted using XGBoost Full and Random Forest Sub. QMJ serves as the primary long-short benchmark, while the S&amp;P 500 is included as a market performance reference. All return series cover the same evaluation period and are normalized to an initial value of 1.</p>
-<section id="random-forest-sub" class="level4">
-<h4 class="anchored" data-anchor-id="random-forest-sub">Random Forest Sub</h4>
-<p><a href="#fig-risk-rf-sub" class="quarto-xref">Figure&nbsp;10</a> and <a href="#tbl-risk-rf-sub" class="quarto-xref">Table&nbsp;4</a> show a clear trade off between return and risk. At <span class="math inline">\(\lambda=0\)</span>, the portfolio achieves the highest annualized return of 53.20% and Sharpe ratio of 1.609, but also exhibits 33.07% volatility and a maximum drawdown of -56.38%.</p>
-<p>As <span class="math inline">\(\lambda\)</span> increases to 1000, annualized volatility declines to 20.97% and maximum drawdown improves to -45.97%. However, annualized return also falls to 14.56% and the Sharpe ratio declines to 0.694. Among the risk-managed specifications, <span class="math inline">\(\lambda=300\)</span> provides a middle ground, producing a 28.19% annualized return and a Sharpe ratio of 1.116, although its drawdown remains substantially larger than that of the S&amp;P 500.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-rf-sub">
-<div id="cell-fig-risk-rf-sub" class="cell" data-message="false">
+<section id="portfolio-constraints" class="level3">
+<h3 class="anchored" data-anchor-id="portfolio-constraints">Portfolio Constraints</h3>
+<p>All portfolios are fully invested and long only:</p>
+<p><span class="math display">\[
+\sum_{i=1}^{N} w_i = 1
+\]</span></p>
+<p><span class="math display">\[
+w_i \geq 0
+\]</span></p>
+<p>A position limit is imposed relative to the benchmark to prevent excessive concentration in individual stocks. The main specification uses a 2% position limit.</p>
+<p>For selected stocks that are already included in the benchmark,</p>
+<p><span class="math display">\[
+\max(0,b_i-c)
+\leq
+w_i
+\leq
+b_i+c
+\]</span></p>
+<p>where <span class="math inline">\(c\)</span> is the position limit.</p>
+<p>For selected stocks that are not included in the benchmark,</p>
+<p><span class="math display">\[
+0
+\leq
+w_i
+\leq
+c
+\]</span></p>
+<p>For benchmark stocks that are not selected by the alpha model,</p>
+<p><span class="math display">\[
+\max(0,b_i-c)
+\leq
+w_i
+\leq
+b_i
+\]</span></p>
+<p>Under the main specification,</p>
+<p><span class="math display">\[
+c=0.02
+\]</span></p>
+</section>
+</section>
+<section id="parameter-sensitivity" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-sensitivity">Parameter Sensitivity</h2>
+<p>The portfolio optimization depends on two risk penalty parameters, <span class="math inline">\(\lambda_F\)</span> and <span class="math inline">\(\lambda_S\)</span>. To examine how sensitive portfolio performance is to these parameters, the analysis is conducted in two stages. A broad parameter grid is first used to identify the general region of stronger performance, followed by a narrower grid to examine that region in more detail. The position limit is fixed at 2% throughout this analysis.</p>
+<p>The initial parameter grid is <span class="math inline">\(\lambda_F \in \{1,100,1000,5000,10000\}\)</span> and <span class="math inline">\(\lambda_S \in \{1,100,1000,5000,10000\}\)</span>.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-fig-ir-coarse">
+<div id="cell-fig-ir-coarse" class="cell" data-fig-width="12" data-fig-height="14">
 <div class="cell-output cell-output-display">
-<div id="fig-risk-rf-sub" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-ir-coarse" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-rf-sub-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-ir-coarse-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-backtest_new-fig-ir-coarse-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;10: Cumulative performance of the risk optimized Random Forest Sub long-short portfolios.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ir-coarse-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Information Ratio Sensitivity: Coarse Parameter Grid
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-risk-rf-sub">
-<div class="cell" data-message="false">
-<div id="tbl-risk-rf-sub" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: Performance metrics for the Random Forest Sub portfolios and benchmarks.
+<p><a href="#fig-ir-coarse" class="quarto-xref">Figure&nbsp;8</a> show that performance generally improves when <span class="math inline">\(\lambda_F\)</span> is larger, while very large values of <span class="math inline">\(\lambda_S\)</span> tend to reduce the Information Ratio. Based on this pattern, the search range is narrowed to focus on larger values of <span class="math inline">\(\lambda_F\)</span> and smaller values of <span class="math inline">\(\lambda_S\)</span>.</p>
+<p>The refined parameter grid is <span class="math inline">\(\lambda_F \in \{5000,6000,7000,8000,10000\}\)</span> and <span class="math inline">\(\lambda_S \in \{10,30,50,70,100\}\)</span>.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-fig-ir-fine">
+<div id="cell-fig-ir-fine" class="cell" data-fig-width="12" data-fig-height="14">
+<div class="cell-output cell-output-display">
+<div id="fig-ir-fine" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ir-fine-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-backtest_new-fig-ir-fine-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ir-fine-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Information Ratio Sensitivity: Fine Parameter Grid
 </figcaption>
-<div aria-describedby="tbl-risk-rf-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p><a href="#fig-ir-fine" class="quarto-xref">Figure&nbsp;9</a> a relatively stable region around higher values of <span class="math inline">\(\lambda_F\)</span> and lower values of <span class="math inline">\(\lambda_S\)</span>. In particular, the results are broadly similar across several nearby parameter combinations rather than being driven by a single isolated point.</p>
+<p>A common specification is therefore selected for all six alpha models:</p>
+<p><span class="math display">\[
+\boxed{
+\lambda_F=7000,
+\qquad
+\lambda_S=30
+}
+\]</span></p>
+<p>This combination lies within the stable region of the parameter search and provides a consistent specification for comparing the six models in the backtest.</p>
+</section>
+<section id="main-backtest-results" class="level2">
+<h2 class="anchored" data-anchor-id="main-backtest-results">Main Backtest Results</h2>
+<section id="performance-summary" class="level3">
+<h3 class="anchored" data-anchor-id="performance-summary">Performance Summary</h3>
+<p>The main backtest uses the common portfolio specification selected from the parameter sensitivity analysis:</p>
+<p><span class="math display">\[
+\lambda_F=7000,
+\qquad
+\lambda_S=30,
+\qquad
+\text{position limit}=2\%
+\]</span></p>
+<p>The same specification is applied to all six alpha models to provide a consistent comparison of their portfolio performance.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-tbl-main-backtest">
+<div class="cell">
+<div id="tbl-main-backtest" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-main-backtest-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Main backtest performance using λF = 7000, λS = 30, and a 2% position limit.
+</figcaption>
+<div aria-describedby="tbl-main-backtest-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
 <style type="text/css">
 </style>
 
-<table id="T_36cef" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table id="T_3f3a8" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
-<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th id="T_36cef_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Annualized Return</th>
-<th id="T_36cef_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Annualized Volatility</th>
-<th id="T_36cef_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Annualized Sharpe</th>
-<th id="T_36cef_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Cumulative Return</th>
-<th id="T_36cef_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Max Drawdown</th>
+<th id="T_3f3a8_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Model</th>
+<th id="T_3f3a8_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Features</th>
+<th id="T_3f3a8_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Ann. Excess Return</th>
+<th id="T_3f3a8_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Ann. Vol</th>
+<th id="T_3f3a8_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Sharpe</th>
+<th id="T_3f3a8_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">IR</th>
+<th id="T_3f3a8_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">Cumulative Excess</th>
+<th id="T_3f3a8_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">Max DD</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td id="T_36cef_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
-<td id="T_36cef_row0_col0" class="data row0 col0">53.20%</td>
-<td id="T_36cef_row0_col1" class="data row0 col1">33.07%</td>
-<td id="T_36cef_row0_col2" class="data row0 col2">1.609</td>
-<td id="T_36cef_row0_col3" class="data row0 col3">1489.52%</td>
-<td id="T_36cef_row0_col4" class="data row0 col4">-56.38%</td>
+<td id="T_3f3a8_row0_col0" class="data row0 col0">Logistic</td>
+<td id="T_3f3a8_row0_col1" class="data row0 col1">Full</td>
+<td id="T_3f3a8_row0_col2" class="data row0 col2">14.10%</td>
+<td id="T_3f3a8_row0_col3" class="data row0 col3">17.75%</td>
+<td id="T_3f3a8_row0_col4" class="data row0 col4">0.794</td>
+<td id="T_3f3a8_row0_col5" class="data row0 col5">0.217</td>
+<td id="T_3f3a8_row0_col6" class="data row0 col6">109.25%</td>
+<td id="T_3f3a8_row0_col7" class="data row0 col7">-26.27%</td>
 </tr>
 <tr class="even">
-<td id="T_36cef_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">100</td>
-<td id="T_36cef_row1_col0" class="data row1 col0">44.16%</td>
-<td id="T_36cef_row1_col1" class="data row1 col1">30.71%</td>
-<td id="T_36cef_row1_col2" class="data row1 col2">1.438</td>
-<td id="T_36cef_row1_col3" class="data row1 col3">890.76%</td>
-<td id="T_36cef_row1_col4" class="data row1 col4">-55.02%</td>
+<td id="T_3f3a8_row1_col0" class="data row1 col0">Logistic</td>
+<td id="T_3f3a8_row1_col1" class="data row1 col1">Sub</td>
+<td id="T_3f3a8_row1_col2" class="data row1 col2">14.58%</td>
+<td id="T_3f3a8_row1_col3" class="data row1 col3">18.15%</td>
+<td id="T_3f3a8_row1_col4" class="data row1 col4">0.803</td>
+<td id="T_3f3a8_row1_col5" class="data row1 col5">0.332</td>
+<td id="T_3f3a8_row1_col6" class="data row1 col6">114.36%</td>
+<td id="T_3f3a8_row1_col7" class="data row1 col7">-23.77%</td>
 </tr>
 <tr class="odd">
-<td id="T_36cef_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">300</td>
-<td id="T_36cef_row2_col0" class="data row2 col0">28.19%</td>
-<td id="T_36cef_row2_col1" class="data row2 col1">25.26%</td>
-<td id="T_36cef_row2_col2" class="data row2 col2">1.116</td>
-<td id="T_36cef_row2_col3" class="data row2 col3">331.11%</td>
-<td id="T_36cef_row2_col4" class="data row2 col4">-50.77%</td>
+<td id="T_3f3a8_row2_col0" class="data row2 col0">Random Forest</td>
+<td id="T_3f3a8_row2_col1" class="data row2 col1">Full</td>
+<td id="T_3f3a8_row2_col2" class="data row2 col2">16.47%</td>
+<td id="T_3f3a8_row2_col3" class="data row2 col3">18.33%</td>
+<td id="T_3f3a8_row2_col4" class="data row2 col4">0.899</td>
+<td id="T_3f3a8_row2_col5" class="data row2 col5">0.686</td>
+<td id="T_3f3a8_row2_col6" class="data row2 col6">139.03%</td>
+<td id="T_3f3a8_row2_col7" class="data row2 col7">-19.98%</td>
 </tr>
 <tr class="even">
-<td id="T_36cef_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">1000</td>
-<td id="T_36cef_row3_col0" class="data row3 col0">14.56%</td>
-<td id="T_36cef_row3_col1" class="data row3 col1">20.97%</td>
-<td id="T_36cef_row3_col2" class="data row3 col2">0.694</td>
-<td id="T_36cef_row3_col3" class="data row3 col3">106.84%</td>
-<td id="T_36cef_row3_col4" class="data row3 col4">-45.97%</td>
+<td id="T_3f3a8_row3_col0" class="data row3 col0">Random Forest</td>
+<td id="T_3f3a8_row3_col1" class="data row3 col1">Sub</td>
+<td id="T_3f3a8_row3_col2" class="data row3 col2">14.73%</td>
+<td id="T_3f3a8_row3_col3" class="data row3 col3">18.52%</td>
+<td id="T_3f3a8_row3_col4" class="data row3 col4">0.795</td>
+<td id="T_3f3a8_row3_col5" class="data row3 col5">0.332</td>
+<td id="T_3f3a8_row3_col6" class="data row3 col6">115.36%</td>
+<td id="T_3f3a8_row3_col7" class="data row3 col7">-22.55%</td>
 </tr>
 <tr class="odd">
-<td id="T_36cef_level0_row4" class="row_heading level0 row4" data-quarto-table-cell-role="th">S&amp;P 500</td>
-<td id="T_36cef_row4_col0" class="data row4 col0">15.94%</td>
-<td id="T_36cef_row4_col1" class="data row4 col1">17.36%</td>
-<td id="T_36cef_row4_col2" class="data row4 col2">0.918</td>
-<td id="T_36cef_row4_col3" class="data row4 col3">131.11%</td>
-<td id="T_36cef_row4_col4" class="data row4 col4">-23.93%</td>
+<td id="T_3f3a8_row4_col0" class="data row4 col0">XGBoost</td>
+<td id="T_3f3a8_row4_col1" class="data row4 col1">Full</td>
+<td id="T_3f3a8_row4_col2" class="data row4 col2">13.47%</td>
+<td id="T_3f3a8_row4_col3" class="data row4 col3">19.21%</td>
+<td id="T_3f3a8_row4_col4" class="data row4 col4">0.701</td>
+<td id="T_3f3a8_row4_col5" class="data row4 col5">0.050</td>
+<td id="T_3f3a8_row4_col6" class="data row4 col6">98.43%</td>
+<td id="T_3f3a8_row4_col7" class="data row4 col7">-26.78%</td>
 </tr>
 <tr class="even">
-<td id="T_36cef_level0_row5" class="row_heading level0 row5" data-quarto-table-cell-role="th">QMJ</td>
-<td id="T_36cef_row5_col0" class="data row5 col0">-3.09%</td>
-<td id="T_36cef_row5_col1" class="data row5 col1">11.02%</td>
-<td id="T_36cef_row5_col2" class="data row5 col2">-0.280</td>
-<td id="T_36cef_row5_col3" class="data row5 col3">-19.43%</td>
-<td id="T_36cef_row5_col4" class="data row5 col4">-27.77%</td>
+<td id="T_3f3a8_row5_col0" class="data row5 col0">XGBoost</td>
+<td id="T_3f3a8_row5_col1" class="data row5 col1">Sub</td>
+<td id="T_3f3a8_row5_col2" class="data row5 col2">15.33%</td>
+<td id="T_3f3a8_row5_col3" class="data row5 col3">18.95%</td>
+<td id="T_3f3a8_row5_col4" class="data row5 col4">0.809</td>
+<td id="T_3f3a8_row5_col5" class="data row5 col5">0.475</td>
+<td id="T_3f3a8_row5_col6" class="data row5 col6">121.76%</td>
+<td id="T_3f3a8_row5_col7" class="data row5 col7">-21.14%</td>
+</tr>
+<tr class="odd">
+<td id="T_3f3a8_row6_col0" class="data row6 col0">S&amp;P 500</td>
+<td id="T_3f3a8_row6_col1" class="data row6 col1">Benchmark</td>
+<td id="T_3f3a8_row6_col2" class="data row6 col2">13.20%</td>
+<td id="T_3f3a8_row6_col3" class="data row6 col3">17.27%</td>
+<td id="T_3f3a8_row6_col4" class="data row6 col4">0.765</td>
+<td id="T_3f3a8_row6_col5" class="data row6 col5">—</td>
+<td id="T_3f3a8_row6_col6" class="data row6 col6">99.48%</td>
+<td id="T_3f3a8_row6_col7" class="data row6 col7">-24.14%</td>
+</tr>
+<tr class="even">
+<td id="T_3f3a8_row7_col0" class="data row7 col0">QMJ</td>
+<td id="T_3f3a8_row7_col1" class="data row7 col1">Reference</td>
+<td id="T_3f3a8_row7_col2" class="data row7 col2">-3.09%</td>
+<td id="T_3f3a8_row7_col3" class="data row7 col3">10.94%</td>
+<td id="T_3f3a8_row7_col4" class="data row7 col4">-0.283</td>
+<td id="T_3f3a8_row7_col5" class="data row7 col5">-0.676</td>
+<td id="T_3f3a8_row7_col6" class="data row7 col6">-19.64%</td>
+<td id="T_3f3a8_row7_col7" class="data row7 col7">-27.77%</td>
 </tr>
 </tbody>
 </table>
@@ -1849,98 +1673,142 @@ Table&nbsp;4: Performance metrics for the Random Forest Sub portfolios and bench
 </div>
 </div>
 </div>
+<p><a href="#tbl-main-backtest" class="quarto-xref">Table&nbsp;2</a> show that four of the six model portfolios generate higher annualized excess returns than the S&amp;P 500 benchmark. The strongest result is produced by <strong>Random Forest Full</strong>, with an annualized excess return of 16.47%, a Sharpe ratio of 0.899, and an Information Ratio of 0.686. It also has a maximum drawdown of -19.98%, compared with -24.14% for the benchmark.</p>
+<p><strong>XGBoost Sub</strong> also performs well, producing an annualized excess return of 15.33% and an Information Ratio of 0.475. Logistic Sub and Random Forest Sub both produce positive active performance, although their Information Ratios are lower at 0.332.</p>
+<p>The results also show that using the full feature set does not consistently improve performance. Random Forest performs substantially better with the full feature set, while XGBoost performs considerably better with the selected subset. This suggests that the effect of feature selection depends on the underlying prediction model.</p>
+<p>Among the six portfolios, XGBoost Full provides the weakest relative performance, with an Information Ratio of 0.050. Overall, Random Forest Full provides the strongest combination of return, risk adjusted performance, and benchmark relative performance under the common portfolio specification.</p>
+<p>QMJ is included as an additional reference strategy and performs poorly over the backtest period, with a negative annualized excess return and Information Ratio.</p>
 </section>
-<section id="xgboost-full" class="level4">
-<h4 class="anchored" data-anchor-id="xgboost-full">XGBoost Full</h4>
-<p><a href="#fig-risk-xgb-full" class="quarto-xref">Figure&nbsp;11</a> and <a href="#tbl-risk-xgb-full" class="quarto-xref">Table&nbsp;5</a> indicate stronger overall performance for the XGBoost Full signal. The <span class="math inline">\(\lambda=0\)</span> portfolio generates the highest annualized return of 74.12% and Sharpe ratio of 2.163, accompanied by 34.27% volatility and a maximum drawdown of -49.86%.</p>
-<p>At <span class="math inline">\(\lambda=300\)</span>, annualized volatility falls to 23.81%, while the portfolio retains an annualized return of 32.97% and a Sharpe ratio of 1.385. By contrast, the <span class="math inline">\(\lambda=1000\)</span> portfolio produces performance close to the S&amp;P 500, suggesting that a very large risk penalty removes much of the return advantage provided by the alpha signal.</p>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-fig-risk-xgb-full">
-<div id="cell-fig-risk-xgb-full" class="cell" data-message="false">
+<section id="cumulative-performance" class="level3">
+<h3 class="anchored" data-anchor-id="cumulative-performance">Cumulative Performance</h3>
+<p>The cumulative performance of the full feature models is shown in <a href="#fig-cumulative-full" class="quarto-xref">Figure&nbsp;10</a>.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-fig-cumulative-full">
+<div id="cell-fig-cumulative-full" class="cell">
 <div class="cell-output cell-output-display">
-<div id="fig-risk-xgb-full" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-cumulative-full" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/notebooks-04_backtest_02-fig-risk-xgb-full-output-1.png" class="img-fluid figure-img">
+<div aria-describedby="fig-cumulative-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-backtest_new-fig-cumulative-full-output-1.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11: Cumulative performance of the risk-optimized XGBoost Full long-short portfolios.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cumulative-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Cumulative excess returns of the full feature models, S&amp;P 500 benchmark, and QMJ.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\04_backtest_02.ipynb" data-notebook-title="0" data-notebook-cellid="cell-tbl-risk-xgb-full">
-<div class="cell" data-message="false">
-<div id="tbl-risk-xgb-full" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-message="false">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;5: Performance metrics for the XGBoost Full portfolios and benchmarks.
+<p>The full feature portfolios generally follow the broad movements of the S&amp;P 500 while producing different levels of cumulative performance. Random Forest Full separates most clearly from the benchmark over the later part of the sample and finishes with the highest cumulative excess return. Logistic Full remains relatively close to the benchmark, while XGBoost Full finishes slightly below it.</p>
+<p>The cumulative performance of the selected feature models is shown in <a href="#fig-cumulative-sub" class="quarto-xref">Figure&nbsp;11</a>.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-fig-cumulative-sub">
+<div id="cell-fig-cumulative-sub" class="cell">
+<div class="cell-output cell-output-display">
+<div id="fig-cumulative-sub" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cumulative-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-backtest_new-fig-cumulative-sub-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cumulative-sub-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: Cumulative excess returns of the selected feature models, S&amp;P 500 benchmark, and QMJ.
 </figcaption>
-<div aria-describedby="tbl-risk-xgb-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Among the subset models, XGBoost Sub produces the strongest cumulative performance and ends above both the benchmark and the other subset models. Logistic Sub and Random Forest Sub also finish above the S&amp;P 500, although their performance paths remain closer to the benchmark.</p>
+<p>Across both feature sets, the strategies experience drawdowns during the same broad market stress periods as the benchmark, but their relative performance differs substantially across models. These results are consistent with the summary statistics in <a href="#tbl-main-backtest" class="quarto-xref">Table&nbsp;2</a>: Random Forest performs best with the full feature set, while XGBoost benefits more from the selected subset.</p>
+<p>QMJ is included as a reference and follows a substantially different performance path. Its cumulative return remains negative over most of the sample and ends well below the S&amp;P 500 and the six model portfolios.</p>
+</section>
+</section>
+<section id="robustness-checks" class="level2">
+<h2 class="anchored" data-anchor-id="robustness-checks">Robustness Checks</h2>
+<p>The robustness analysis examines whether the main backtest conclusions remain similar under reasonable changes in the portfolio construction settings. The risk penalty parameters are fixed at</p>
+<p><span class="math display">\[
+\lambda_F=7000,
+\qquad
+\lambda_S=30,
+\]</span></p>
+<p>while the position limit is varied around the 2% main specification.</p>
+<section id="position-limit-robustness" class="level3">
+<h3 class="anchored" data-anchor-id="position-limit-robustness">Position Limit Robustness</h3>
+<p>The position limit is evaluated at</p>
+<p><span class="math display">\[
+1.70\%,\quad
+1.85\%,\quad
+2.00\%,\quad
+2.15\%,\quad
+2.30\%.
+\]</span></p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-tbl-position-limit">
+<div class="cell">
+<div id="tbl-position-limit" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-position-limit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Information Ratio across different position limits with λF = 7000 and λS = 30.
+</figcaption>
+<div aria-describedby="tbl-position-limit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
 <style type="text/css">
 </style>
 
-<table id="T_9ef16" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table id="T_edb03" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
-<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
-<th id="T_9ef16_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Annualized Return</th>
-<th id="T_9ef16_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Annualized Volatility</th>
-<th id="T_9ef16_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Annualized Sharpe</th>
-<th id="T_9ef16_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Cumulative Return</th>
-<th id="T_9ef16_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Max Drawdown</th>
+<th id="T_edb03_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Position Limit</th>
+<th id="T_edb03_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">XGB Full</th>
+<th id="T_edb03_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">XGB Sub</th>
+<th id="T_edb03_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Logistic Full</th>
+<th id="T_edb03_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Logistic Sub</th>
+<th id="T_edb03_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">RF Full</th>
+<th id="T_edb03_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">RF Sub</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td id="T_9ef16_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
-<td id="T_9ef16_row0_col0" class="data row0 col0">74.12%</td>
-<td id="T_9ef16_row0_col1" class="data row0 col1">34.27%</td>
-<td id="T_9ef16_row0_col2" class="data row0 col2">2.163</td>
-<td id="T_9ef16_row0_col3" class="data row0 col3">4892.41%</td>
-<td id="T_9ef16_row0_col4" class="data row0 col4">-49.86%</td>
+<td id="T_edb03_row0_col0" class="data row0 col0">1.70%</td>
+<td id="T_edb03_row0_col1" class="data row0 col1">-0.010</td>
+<td id="T_edb03_row0_col2" class="data row0 col2">0.361</td>
+<td id="T_edb03_row0_col3" class="data row0 col3">0.178</td>
+<td id="T_edb03_row0_col4" class="data row0 col4">0.238</td>
+<td id="T_edb03_row0_col5" class="data row0 col5">0.638</td>
+<td id="T_edb03_row0_col6" class="data row0 col6">0.398</td>
 </tr>
 <tr class="even">
-<td id="T_9ef16_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">100</td>
-<td id="T_9ef16_row1_col0" class="data row1 col0">54.16%</td>
-<td id="T_9ef16_row1_col1" class="data row1 col1">30.72%</td>
-<td id="T_9ef16_row1_col2" class="data row1 col2">1.763</td>
-<td id="T_9ef16_row1_col3" class="data row1 col3">1628.50%</td>
-<td id="T_9ef16_row1_col4" class="data row1 col4">-54.69%</td>
+<td id="T_edb03_row1_col0" class="data row1 col0">1.85%</td>
+<td id="T_edb03_row1_col1" class="data row1 col1">0.017</td>
+<td id="T_edb03_row1_col2" class="data row1 col2">0.441</td>
+<td id="T_edb03_row1_col3" class="data row1 col3">0.193</td>
+<td id="T_edb03_row1_col4" class="data row1 col4">0.315</td>
+<td id="T_edb03_row1_col5" class="data row1 col5">0.646</td>
+<td id="T_edb03_row1_col6" class="data row1 col6">0.363</td>
 </tr>
 <tr class="odd">
-<td id="T_9ef16_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">300</td>
-<td id="T_9ef16_row2_col0" class="data row2 col0">32.97%</td>
-<td id="T_9ef16_row2_col1" class="data row2 col1">23.81%</td>
-<td id="T_9ef16_row2_col2" class="data row2 col2">1.385</td>
-<td id="T_9ef16_row2_col3" class="data row2 col3">477.37%</td>
-<td id="T_9ef16_row2_col4" class="data row2 col4">-45.65%</td>
+<td id="T_edb03_row2_col0" class="data row2 col0">2.00%</td>
+<td id="T_edb03_row2_col1" class="data row2 col1">0.050</td>
+<td id="T_edb03_row2_col2" class="data row2 col2">0.475</td>
+<td id="T_edb03_row2_col3" class="data row2 col3">0.217</td>
+<td id="T_edb03_row2_col4" class="data row2 col4">0.332</td>
+<td id="T_edb03_row2_col5" class="data row2 col5">0.686</td>
+<td id="T_edb03_row2_col6" class="data row2 col6">0.332</td>
 </tr>
 <tr class="even">
-<td id="T_9ef16_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">1000</td>
-<td id="T_9ef16_row3_col0" class="data row3 col0">15.91%</td>
-<td id="T_9ef16_row3_col1" class="data row3 col1">18.39%</td>
-<td id="T_9ef16_row3_col2" class="data row3 col2">0.865</td>
-<td id="T_9ef16_row3_col3" class="data row3 col3">130.54%</td>
-<td id="T_9ef16_row3_col4" class="data row3 col4">-28.88%</td>
+<td id="T_edb03_row3_col0" class="data row3 col0">2.15%</td>
+<td id="T_edb03_row3_col1" class="data row3 col1">0.093</td>
+<td id="T_edb03_row3_col2" class="data row3 col2">0.497</td>
+<td id="T_edb03_row3_col3" class="data row3 col3">0.228</td>
+<td id="T_edb03_row3_col4" class="data row3 col4">0.309</td>
+<td id="T_edb03_row3_col5" class="data row3 col5">0.758</td>
+<td id="T_edb03_row3_col6" class="data row3 col6">0.307</td>
 </tr>
 <tr class="odd">
-<td id="T_9ef16_level0_row4" class="row_heading level0 row4" data-quarto-table-cell-role="th">S&amp;P 500</td>
-<td id="T_9ef16_row4_col0" class="data row4 col0">15.94%</td>
-<td id="T_9ef16_row4_col1" class="data row4 col1">17.36%</td>
-<td id="T_9ef16_row4_col2" class="data row4 col2">0.918</td>
-<td id="T_9ef16_row4_col3" class="data row4 col3">131.11%</td>
-<td id="T_9ef16_row4_col4" class="data row4 col4">-23.93%</td>
-</tr>
-<tr class="even">
-<td id="T_9ef16_level0_row5" class="row_heading level0 row5" data-quarto-table-cell-role="th">QMJ</td>
-<td id="T_9ef16_row5_col0" class="data row5 col0">-3.09%</td>
-<td id="T_9ef16_row5_col1" class="data row5 col1">11.02%</td>
-<td id="T_9ef16_row5_col2" class="data row5 col2">-0.280</td>
-<td id="T_9ef16_row5_col3" class="data row5 col3">-19.43%</td>
-<td id="T_9ef16_row5_col4" class="data row5 col4">-27.77%</td>
+<td id="T_edb03_row4_col0" class="data row4 col0">2.30%</td>
+<td id="T_edb03_row4_col1" class="data row4 col1">0.145</td>
+<td id="T_edb03_row4_col2" class="data row4 col2">0.488</td>
+<td id="T_edb03_row4_col3" class="data row4 col3">0.210</td>
+<td id="T_edb03_row4_col4" class="data row4 col4">0.281</td>
+<td id="T_edb03_row4_col5" class="data row4 col5">0.731</td>
+<td id="T_edb03_row4_col6" class="data row4 col6">0.266</td>
 </tr>
 </tbody>
 </table>
@@ -1950,8 +1818,121 @@ Table&nbsp;5: Performance metrics for the XGBoost Full portfolios and benchmarks
 </div>
 </div>
 </div>
-<p>Overall, XGBoost Full produces higher returns and Sharpe ratios than Random Forest Sub at each corresponding value of <span class="math inline">\(\lambda\)</span>. The results also demonstrate that stronger risk penalization reduces portfolio volatility, but this improvement comes at the cost of lower returns. In this comparison, <span class="math inline">\(\lambda=300\)</span> provides a reasonable balance between preserving the alpha signal and controlling portfolio risk.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-fig-position-limit">
+<div id="cell-fig-position-limit" class="cell">
+<div class="cell-output cell-output-display">
+<div id="fig-position-limit" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-position-limit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/notebooks-backtest_new-fig-position-limit-output-1.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-position-limit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: Information Ratio sensitivity to the portfolio position limit.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p><a href="#tbl-position-limit" class="quarto-xref">Table&nbsp;3</a> and <a href="#fig-position-limit" class="quarto-xref">Figure&nbsp;12</a> show that the effect of the position limit differs across models, but the main performance patterns remain broadly similar around the 2% specification.</p>
+<p>Random Forest Full remains the strongest model across the tested range. Its Information Ratio increases from 0.638 at a 1.70% limit to 0.686 at the 2% main specification, reaches 0.758 at 2.15%, and remains high at 0.731 under a 2.30% limit.</p>
+<p>XGBoost Sub also remains relatively stable, with an Information Ratio between 0.441 and 0.497 from 1.85% to 2.30%. Logistic Full improves gradually as the position limit increases, although its Information Ratio remains lower than those of Random Forest Full and XGBoost Sub.</p>
+<p>Some models are more sensitive to the position limit. In particular, Random Forest Sub performs better under tighter limits and declines as the limit increases, while Logistic Sub reaches its strongest result near 2%.</p>
+<p>Overall, the results suggest that the main conclusions are not driven by a single exact position limit. The 2% specification provides a reasonable common constraint across all six models, while nearby values produce similar rankings and performance patterns.</p>
 </section>
+<section id="active-portfolio-characteristics" class="level3">
+<h3 class="anchored" data-anchor-id="active-portfolio-characteristics">Active Portfolio Characteristics</h3>
+<p>The active characteristics of the portfolios under the main specification are reported in <a href="#tbl-active-characteristics" class="quarto-xref">Table&nbsp;4</a>.</p>
+<div class="quarto-embed-nb-cell" data-notebook="C:\Users\user\Desktop\UMN\FM2026 Spring\retry\HW00 Optional\98_reports\notebooks\backtest_new.ipynb" data-notebook-title="xgb" data-notebook-cellid="cell-tbl-active-characteristics">
+<div class="cell">
+<div id="tbl-active-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-active-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Active portfolio characteristics under the main specification.
+</figcaption>
+<div aria-describedby="tbl-active-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display">
+<style type="text/css">
+</style>
+
+<table id="T_fc62e" class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th id="T_fc62e_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Model</th>
+<th id="T_fc62e_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Set</th>
+<th id="T_fc62e_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">IR</th>
+<th id="T_fc62e_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Active Share</th>
+<th id="T_fc62e_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Active Risk</th>
+<th id="T_fc62e_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">Factor Risk</th>
+<th id="T_fc62e_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">Specific Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td id="T_fc62e_row0_col0" class="data row0 col0">Logistic</td>
+<td id="T_fc62e_row0_col1" class="data row0 col1">Full</td>
+<td id="T_fc62e_row0_col2" class="data row0 col2">0.217</td>
+<td id="T_fc62e_row0_col3" class="data row0 col3">66.03%</td>
+<td id="T_fc62e_row0_col4" class="data row0 col4">2.85%</td>
+<td id="T_fc62e_row0_col5" class="data row0 col5">0.16%</td>
+<td id="T_fc62e_row0_col6" class="data row0 col6">2.85%</td>
+</tr>
+<tr class="even">
+<td id="T_fc62e_row1_col0" class="data row1 col0">Logistic</td>
+<td id="T_fc62e_row1_col1" class="data row1 col1">Sub</td>
+<td id="T_fc62e_row1_col2" class="data row1 col2">0.332</td>
+<td id="T_fc62e_row1_col3" class="data row1 col3">66.05%</td>
+<td id="T_fc62e_row1_col4" class="data row1 col4">2.82%</td>
+<td id="T_fc62e_row1_col5" class="data row1 col5">0.16%</td>
+<td id="T_fc62e_row1_col6" class="data row1 col6">2.81%</td>
+</tr>
+<tr class="odd">
+<td id="T_fc62e_row2_col0" class="data row2 col0">Random Forest</td>
+<td id="T_fc62e_row2_col1" class="data row2 col1">Full</td>
+<td id="T_fc62e_row2_col2" class="data row2 col2">0.686</td>
+<td id="T_fc62e_row2_col3" class="data row2 col3">67.31%</td>
+<td id="T_fc62e_row2_col4" class="data row2 col4">3.13%</td>
+<td id="T_fc62e_row2_col5" class="data row2 col5">0.56%</td>
+<td id="T_fc62e_row2_col6" class="data row2 col6">3.04%</td>
+</tr>
+<tr class="even">
+<td id="T_fc62e_row3_col0" class="data row3 col0">Random Forest</td>
+<td id="T_fc62e_row3_col1" class="data row3 col1">Sub</td>
+<td id="T_fc62e_row3_col2" class="data row3 col2">0.332</td>
+<td id="T_fc62e_row3_col3" class="data row3 col3">64.97%</td>
+<td id="T_fc62e_row3_col4" class="data row3 col4">2.97%</td>
+<td id="T_fc62e_row3_col5" class="data row3 col5">0.44%</td>
+<td id="T_fc62e_row3_col6" class="data row3 col6">2.90%</td>
+</tr>
+<tr class="odd">
+<td id="T_fc62e_row4_col0" class="data row4 col0">XGBoost</td>
+<td id="T_fc62e_row4_col1" class="data row4 col1">Full</td>
+<td id="T_fc62e_row4_col2" class="data row4 col2">0.050</td>
+<td id="T_fc62e_row4_col3" class="data row4 col3">67.46%</td>
+<td id="T_fc62e_row4_col4" class="data row4 col4">3.24%</td>
+<td id="T_fc62e_row4_col5" class="data row4 col5">0.59%</td>
+<td id="T_fc62e_row4_col6" class="data row4 col6">3.15%</td>
+</tr>
+<tr class="even">
+<td id="T_fc62e_row5_col0" class="data row5 col0">XGBoost</td>
+<td id="T_fc62e_row5_col1" class="data row5 col1">Sub</td>
+<td id="T_fc62e_row5_col2" class="data row5 col2">0.475</td>
+<td id="T_fc62e_row5_col3" class="data row5 col3">66.22%</td>
+<td id="T_fc62e_row5_col4" class="data row5 col4">3.15%</td>
+<td id="T_fc62e_row5_col5" class="data row5 col5">0.45%</td>
+<td id="T_fc62e_row5_col6" class="data row5 col6">3.09%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<p>Active Share is approximately 65% to 67% across all six portfolios. This indicates that the optimized portfolios differ meaningfully from the S&amp;P 500 benchmark and are not simply reproducing benchmark weights.</p>
+<p>Annualized active risk ranges from approximately 2.8% to 3.2%. Most of this risk comes from specific risk rather than systematic factor risk. Factor risk ranges from only 0.16% to 0.59%, while specific risk is approximately 2.8% to 3.2%.</p>
+<p>This pattern is consistent with the portfolio optimization design. The relatively large value of <span class="math inline">\(\lambda_F\)</span> strongly limits active factor exposures, while the smaller value of <span class="math inline">\(\lambda_S\)</span> allows the portfolios to take more risk through individual stock positions. As a result, active risk is primarily associated with stock selection rather than large deviations in systematic factor exposures.</p>
 </section>
 </section>
 </section>
